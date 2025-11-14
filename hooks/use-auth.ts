@@ -1,13 +1,22 @@
-import { useSession } from 'next-auth/react';
+'use client';
+
+import { useState, useEffect } from 'react';
 
 export function useAuth() {
-  const { data: session, status } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Mock auth - in production, this would check actual auth state
+    setIsLoading(false);
+    setUser(null);
+  }, []);
 
   return {
-    user: session?.user,
-    isLoading: status === 'loading',
-    isAuthenticated: !!session,
-    role: session?.user?.role,
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    role: user?.role,
   };
 }
 
