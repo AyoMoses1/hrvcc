@@ -5,10 +5,17 @@ export interface User {
   category: 'Professional' | 'Business' | 'Organization';
   location: string;
   country: string;
-  image: string;
+  image?: string;
+  banner?: string;
   bio: string;
   skills?: string[];
-  services?: string[];
+  services?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    image?: string;
+    price?: string;
+  }>;
   verified: boolean;
   rating?: number;
   reviews?: number;

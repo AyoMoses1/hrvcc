@@ -1,10 +1,6 @@
-import { Metadata } from 'next';
-import { BusinessesPage } from '@/features/admin/components/businesses-page';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Businesses',
-  description: 'Manage HRVCC member businesses',
-};
+import { BusinessesPage } from '@/features/admin/components/businesses-page';
 
 export default function Businesses() {
   return <BusinessesPage />;

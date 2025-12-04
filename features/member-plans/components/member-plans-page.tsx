@@ -13,9 +13,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Download, Plus } from 'lucide-react';
+import { Download, Plus, Loader2 } from 'lucide-react';
 import { MemberPlan } from '@/lib/types';
-import { mockMemberPlans } from '@/lib/data/mock-data';
 import { exportMemberPlansCSV } from '@/lib/utils/csv';
 import {
   Dialog,
@@ -24,9 +23,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useMemberPlans, useCreateMemberPlan } from '@/hooks/use-member-plans';
 
 export function MemberPlansPage() {
-  const [plans, setPlans] = useState<MemberPlan[]>(mockMemberPlans);
+  const { data: plansData, isLoading, error } = useMemberPlans({ page: 1, limit: 100 });
+  const plans = plansData?.data || [];
+  const createPlanMutation = useCreateMemberPlan();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newPlan, setNewPlan] = useState({
     category: '',
@@ -38,33 +40,40 @@ export function MemberPlansPage() {
     description: '',
   });
 
-  const handleAddPlan = () => {
-    const plan: MemberPlan = {
-      id: Date.now().toString(),
-      category: newPlan.category,
-      name: newPlan.name,
-      pricing: {
-        monthly: newPlan.monthly ? parseFloat(newPlan.monthly) : undefined,
-        yearly: newPlan.yearly ? parseFloat(newPlan.yearly) : undefined,
-        oneTime: newPlan.oneTime ? parseFloat(newPlan.oneTime) : undefined,
-      },
-      features: newPlan.features
-        .split(',')
-        .map((f) => f.trim())
-        .filter(Boolean),
-      description: newPlan.description,
-    };
-    setPlans([...plans, plan]);
-    setNewPlan({
-      category: '',
-      name: '',
-      monthly: '',
-      yearly: '',
-      oneTime: '',
-      features: '',
-      description: '',
-    });
-    setIsDialogOpen(false);
+  const handleAddPlan = async () => {
+    if (!newPlan.category || !newPlan.name) {
+      return;
+    }
+
+    try {
+      await createPlanMutation.mutateAsync({
+        category: newPlan.category,
+        name: newPlan.name,
+        pricing: {
+          monthly: newPlan.monthly ? parseFloat(newPlan.monthly) : undefined,
+          yearly: newPlan.yearly ? parseFloat(newPlan.yearly) : undefined,
+          oneTime: newPlan.oneTime ? parseFloat(newPlan.oneTime) : undefined,
+        },
+        features: newPlan.features
+          .split(',')
+          .map((f) => f.trim())
+          .filter(Boolean),
+        description: newPlan.description || undefined,
+      });
+
+      setNewPlan({
+        category: '',
+        name: '',
+        monthly: '',
+        yearly: '',
+        oneTime: '',
+        features: '',
+        description: '',
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      // Error is handled by the mutation
+    }
   };
 
   const handleExportCSV = () => {
@@ -165,8 +174,19 @@ export function MemberPlansPage() {
                     placeholder="Feature 1, Feature 2, Feature 3"
                   />
                 </div>
-                <Button onClick={handleAddPlan} className="w-full">
-                  Add Plan
+                <Button
+                  onClick={handleAddPlan}
+                  className="w-full"
+                  disabled={createPlanMutation.isPending}
+                >
+                  {createPlanMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Add Plan'
+                  )}
                 </Button>
               </div>
             </DialogContent>
@@ -174,63 +194,82 @@ export function MemberPlansPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {plans.map((plan, index) => (
-          <Card
-            key={plan.id}
-            className="card-hover animate-fade-in"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>{plan.name}</CardTitle>
-                  <CardDescription className="mt-1">{plan.category}</CardDescription>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4 text-muted-foreground">Loading member plans...</p>
+        </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-destructive">Failed to load member plans. Please try again.</p>
+          </CardContent>
+        </Card>
+      ) : plans.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">No member plans found.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {plans.map((plan, index) => (
+            <Card
+              key={plan.id}
+              className="card-hover animate-fade-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle>{plan.name}</CardTitle>
+                    <CardDescription className="mt-1">{plan.category}</CardDescription>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    Enroll
+                  </Badge>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  Enroll
-                </Badge>
-              </div>
-              {plan.description && (
-                <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {plan.pricing.monthly && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Monthly:</span>
-                    <span className="font-semibold">{plan.pricing.monthly}/mo</span>
-                  </div>
+                {plan.description && (
+                  <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
                 )}
-                {plan.pricing.yearly && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Yearly:</span>
-                    <span className="font-semibold">{plan.pricing.yearly}/yr</span>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {plan.pricing.monthly && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Monthly:</span>
+                      <span className="font-semibold">{plan.pricing.monthly}/mo</span>
+                    </div>
+                  )}
+                  {plan.pricing.yearly && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Yearly:</span>
+                      <span className="font-semibold">{plan.pricing.yearly}/yr</span>
+                    </div>
+                  )}
+                  {plan.pricing.oneTime && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">One-Time:</span>
+                      <span className="font-semibold">{plan.pricing.oneTime}</span>
+                    </div>
+                  )}
+                  <div className="mt-4 border-t pt-3">
+                    <p className="mb-2 text-sm font-semibold">Features:</p>
+                    <ul className="max-h-64 space-y-1 overflow-y-auto text-sm text-muted-foreground">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                          <span className="text-xs">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                )}
-                {plan.pricing.oneTime && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">One-Time:</span>
-                    <span className="font-semibold">{plan.pricing.oneTime}</span>
-                  </div>
-                )}
-                <div className="mt-4 border-t pt-3">
-                  <p className="mb-2 text-sm font-semibold">Features:</p>
-                  <ul className="max-h-64 space-y-1 overflow-y-auto text-sm text-muted-foreground">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                        <span className="text-xs">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

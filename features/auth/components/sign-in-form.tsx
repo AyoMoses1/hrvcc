@@ -11,9 +11,11 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 export function SignInForm() {
   const router = useRouter();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -27,13 +29,20 @@ export function SignInForm() {
 
   const onSubmit = async (data: SignInInput) => {
     setIsLoading(true);
-    
-    // Frontend only - simulate sign in
-    setTimeout(() => {
-      toast.success('Welcome back! (Demo Mode)');
+    try {
+      await login(data.email, data.password);
+      toast.success('Welcome back!');
       router.push('/dashboard');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage = 
+        error?.response?.data?.message || 
+        error?.message || 
+        'Failed to sign in. Please check your credentials and try again.';
+      toast.error(errorMessage);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

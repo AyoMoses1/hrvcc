@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,14 +21,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, MapPin, Clock } from 'lucide-react';
+import { Plus, MapPin, Clock, Loader2, ArrowLeft } from 'lucide-react';
 import { Event } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
-import { mockEvents } from '@/lib/data/mock-data';
+import {
+  useEvents,
+  useCreateEvent,
+} from '@/hooks/use-events';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useAuth } from '@/lib/auth-context';
+import Link from 'next/link';
 
 export function EventsPage() {
-  const [events, setEvents] = useState<Event[]>(mockEvents);
-  // Default to December 2024 to show the sample events
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,88 +48,107 @@ export function EventsPage() {
     category: '',
   });
 
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const createEventMutation = useCreateEvent();
+
   const eventCategories = ['Networking', 'Workshop', 'Conference', 'Social', 'Other'];
 
-  // Get all dates that have events
-  const eventDates = events.map((event) => {
-    const date = new Date(event.date);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  });
+  const filters = useMemo(() => {
+    const filterParams: any = {
+      page: 1,
+      limit: 100,
+    };
 
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch =
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-    const matchesDate = !selectedDate || event.date.toDateString() === selectedDate.toDateString();
-    return matchesSearch && matchesCategory && matchesDate;
-  });
+    if (selectedCategory !== 'all') {
+      filterParams.category = selectedCategory;
+    }
 
-  // Show all upcoming events if no date is selected
-  const displayEvents = selectedDate
-    ? filteredEvents
-    : events.filter((event) => {
-        const matchesSearch =
-          event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          event.description?.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-        return matchesSearch && matchesCategory;
+    if (debouncedSearch) {
+      filterParams.search = debouncedSearch;
+    }
+
+    if (selectedDate) {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      filterParams.from = dateStr;
+      filterParams.to = dateStr;
+    } else {
+      filterParams.upcomingOnly = true;
+    }
+
+    return filterParams;
+  }, [selectedCategory, debouncedSearch, selectedDate]);
+
+  const { data: eventsData, isLoading, error } = useEvents(filters);
+  const events = eventsData?.data || [];
+
+  const handleAddEvent = async () => {
+    if (!newEvent.title || !newEvent.description || !newEvent.date) {
+      return;
+    }
+
+    try {
+      await createEventMutation.mutateAsync({
+        title: newEvent.title,
+        description: newEvent.description,
+        date: newEvent.date.toISOString().split('T')[0],
+        startTime: newEvent.startTime || undefined,
+        endTime: newEvent.endTime || undefined,
+        location: newEvent.location || undefined,
+        category: newEvent.category || undefined,
       });
 
-  // Check if a date has events
-  const dateHasEvents = (date: Date) => {
-    const dateStr = date.toDateString();
-    return events.some((event) => event.date.toDateString() === dateStr);
+      setNewEvent({
+        title: '',
+        description: '',
+        date: new Date(),
+        startTime: '',
+        endTime: '',
+        location: '',
+        category: '',
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      // Error is handled by the mutation
+    }
   };
 
-  const handleAddEvent = () => {
-    const event: Event = {
-      id: Date.now().toString(),
-      ...newEvent,
-      date: newEvent.date,
-      createdBy: 'current-user',
-      createdAt: new Date(),
-    };
-    setEvents([...events, event]);
-    setNewEvent({
-      title: '',
-      description: '',
-      date: new Date(),
-      startTime: '',
-      endTime: '',
-      location: '',
-      category: '',
-    });
-    setIsDialogOpen(false);
-  };
-
-  const eventsByDate = displayEvents.reduce(
-    (acc, event) => {
-      const dateKey = event.date.toDateString();
-      if (!acc[dateKey]) {
-        acc[dateKey] = [];
-      }
-      acc[dateKey].push(event);
-      return acc;
-    },
-    {} as Record<string, Event[]>
-  );
+  const eventsByDate = useMemo(() => {
+    return events.reduce(
+      (acc, event) => {
+        const dateKey = event.date.toDateString();
+        if (!acc[dateKey]) {
+          acc[dateKey] = [];
+        }
+        acc[dateKey].push(event);
+        return acc;
+      },
+      {} as Record<string, Event[]>
+    );
+  }, [events]);
 
   return (
     <div className="container py-8">
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" asChild className="mb-4">
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Link>
+        </Button>
+      </div>
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="mb-2 text-3xl font-bold">Events Calendar</h1>
           <p className="text-muted-foreground">View and manage HRVCC events</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Upload Event
-            </Button>
-          </DialogTrigger>
+        {user?.role === 'admin' && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Upload Event
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Add New Event</DialogTitle>
@@ -207,12 +231,24 @@ export function EventsPage() {
                   placeholder="Enter event location"
                 />
               </div>
-              <Button onClick={handleAddEvent} className="w-full">
-                Add Event
+              <Button
+                onClick={handleAddEvent}
+                className="w-full"
+                disabled={createEventMutation.isPending}
+              >
+                {createEventMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Add Event'
+                )}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Filters */}
@@ -305,7 +341,20 @@ export function EventsPage() {
 
         {/* Events List */}
         <div className="lg:col-span-2">
-          {Object.keys(eventsByDate).length === 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">Loading events...</p>
+              </CardContent>
+            </Card>
+          ) : error ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-destructive">Failed to load events. Please try again.</p>
+              </CardContent>
+            </Card>
+          ) : Object.keys(eventsByDate).length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <p className="text-muted-foreground">No events found for the selected filters.</p>

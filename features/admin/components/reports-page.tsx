@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Download, FileText, Calendar, TrendingUp, Users, Building2 } from 'lucide-react';
 import { exportMemberDirectoryCSV } from '@/lib/utils/csv';
-import { mockUsers } from '@/lib/data/mock-data';
+import { useUsers } from '@/hooks/use-users';
+import { useMemo } from 'react';
 
 export function ReportsPage() {
   const [reportType, setReportType] = useState('member-directory');
@@ -22,7 +23,12 @@ export function ReportsPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const businessUsers = mockUsers.filter((user) => user.category === 'Business');
+  const { data: usersData } = useUsers({ page: 1, limit: 100 });
+  const allUsers = usersData?.data || [];
+
+  const businessUsers = useMemo(() => {
+    return allUsers.filter((user) => user.category === 'Business');
+  }, [allUsers]);
 
   const handleGenerateReport = () => {
     if (reportType === 'member-directory') {

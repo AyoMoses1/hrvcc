@@ -1,10 +1,6 @@
-import { Metadata } from 'next';
-import { CategoriesPage } from '@/features/admin/components/categories-page';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Manage Categories',
-  description: 'Manage business categories for the HRVCC member directory',
-};
+import { CategoriesPage } from '@/features/admin/components/categories-page';
 
 export default function Categories() {
   return <CategoriesPage />;

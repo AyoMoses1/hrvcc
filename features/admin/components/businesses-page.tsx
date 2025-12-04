@@ -12,33 +12,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Download, MapPin, Building2, CheckCircle, XCircle } from 'lucide-react';
-import { mockUsers } from '@/lib/data/mock-data';
+import { Search, Download, MapPin, Building2, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { exportMemberDirectoryCSV } from '@/lib/utils/csv';
 import Link from 'next/link';
+import { useUsers } from '@/hooks/use-users';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useMemo } from 'react';
 
 export function BusinessesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
-  // Filter to only show businesses
-  const businessUsers = mockUsers.filter((user) => user.category === 'Business');
+  const { data: usersData, isLoading, error } = useUsers({ page: 1, limit: 100 });
+  const allUsers = usersData?.data || [];
 
-  const filteredBusinesses = businessUsers.filter((business) => {
-    const matchesSearch =
-      business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      business.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === 'all' ||
-      business.services?.some((s) => s === selectedCategory) ||
-      business.skills?.some((s) => s === selectedCategory);
-    return matchesSearch && matchesCategory;
-  });
+  const businessUsers = useMemo(() => {
+    return allUsers.filter((user) => user.category === 'Business');
+  }, [allUsers]);
+
+  const filteredBusinesses = useMemo(() => {
+    return businessUsers.filter((business) => {
+      const matchesSearch =
+        !debouncedSearch ||
+        business.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        business.title?.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCategory =
+        selectedCategory === 'all' ||
+        business.services?.some((s) => {
+          const serviceName = typeof s === 'string' ? s : s.name;
+          return serviceName === selectedCategory;
+        }) ||
+        business.skills?.some((s) => s === selectedCategory);
+      return matchesSearch && matchesCategory;
+    });
+  }, [businessUsers, debouncedSearch, selectedCategory]);
 
   const categories = Array.from(
     new Set(
-      businessUsers.flatMap((b) => [...(b.services || []), ...(b.skills || [])]).filter(Boolean)
+      businessUsers.flatMap((b) => [
+        ...(b.services?.map((s) => (typeof s === 'string' ? s : s.name)) || []),
+        ...(b.skills || []),
+      ]).filter(Boolean)
     )
   );
 
@@ -88,8 +104,20 @@ export function BusinessesPage() {
       </Card>
 
       {/* Businesses Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredBusinesses.map((business, index) => (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4 text-muted-foreground">Loading businesses...</p>
+        </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-destructive">Error loading businesses. Please try again later.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredBusinesses.map((business, index) => (
           <Card
             key={business.id}
             className="card-hover animate-fade-in"
@@ -121,11 +149,14 @@ export function BusinessesPage() {
 
               {business.services && business.services.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-1">
-                  {business.services.slice(0, 2).map((service, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs">
-                      {service}
-                    </Badge>
-                  ))}
+                  {business.services.slice(0, 2).map((service, idx) => {
+                    const serviceName = typeof service === 'string' ? service : service.name;
+                    return (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {serviceName}
+                      </Badge>
+                    );
+                  })}
                   {business.services.length > 2 && (
                     <Badge variant="outline" className="text-xs">
                       +{business.services.length - 2}
@@ -138,11 +169,12 @@ export function BusinessesPage() {
                 <Link href={`/profile/${business.id}`}>View Profile</Link>
               </Button>
             </CardContent>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {filteredBusinesses.length === 0 && (
+      {!isLoading && filteredBusinesses.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">No businesses found matching your filters.</p>

@@ -1,6 +1,42 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
+import { useAuth } from '@/lib/auth-context';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        router.push('/auth/signin?redirect=/admin');
+        return;
+      }
+      // Check if user is admin
+      if (user.role !== 'admin') {
+        router.push('/dashboard');
+        return;
+      }
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== 'admin') {
+    return null;
+  }
+
   return (
     <>
       <Header />
@@ -9,48 +45,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-6">
             <h2 className="mb-4 text-lg font-semibold">Admin Panel</h2>
             <nav className="space-y-2">
-              <a
+              <Link
                 href="/admin"
                 className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
               >
                 Dashboard
-              </a>
-              <a
+              </Link>
+              <Link
+                href="/admin/analytics"
+                className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
+              >
+                Analytics
+              </Link>
+              <Link
                 href="/admin/categories"
                 className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
               >
                 Categories
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/admin/businesses"
                 className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
               >
                 Businesses
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/admin/users"
                 className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
               >
                 Users
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/admin/jobs"
                 className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
               >
                 Jobs
-              </a>
-              <a
-                href="/admin/reports"
-                className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
-              >
-                Reports
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/admin/settings"
                 className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
               >
                 Settings
-              </a>
+              </Link>
             </nav>
           </div>
         </aside>

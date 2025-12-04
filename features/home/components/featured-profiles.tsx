@@ -1,11 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Star } from 'lucide-react';
-import { mockUsers } from '@/lib/data/mock-data';
+import { MapPin, Star, Loader2 } from 'lucide-react';
+import { useUsers } from '@/hooks/use-users';
 
 export function FeaturedProfiles() {
+  const { data: usersData, isLoading, error } = useUsers({ page: 1, limit: 4 });
+  const users = usersData?.data || [];
+
   return (
     <section className="py-16">
       <div className="container">
@@ -16,8 +21,21 @@ export function FeaturedProfiles() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {mockUsers.slice(0, 4).map((user) => (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">Unable to load featured members. Please try again later.</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">No members to display yet.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {users.slice(0, 4).map((user) => (
             <Card key={user.id} className="overflow-hidden transition-shadow hover:shadow-lg">
               <CardContent className="p-6">
                 <div className="mb-4 flex items-start justify-between">
@@ -57,9 +75,10 @@ export function FeaturedProfiles() {
                   <Link href={`/profile/${user.id}`}>View Profile</Link>
                 </Button>
               </CardFooter>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <div className="mt-12 text-center">
           <Button size="lg" variant="outline" asChild>

@@ -18,9 +18,11 @@ import {
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 export function SignUpForm() {
   const router = useRouter();
+  const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -35,13 +37,20 @@ export function SignUpForm() {
 
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true);
-
-    // Frontend only - simulate registration
-    setTimeout(() => {
-      toast.success('Account created! (Demo Mode)');
+    try {
+      await registerUser({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        category: data.category,
+      });
+      toast.success('Account created successfully!');
       router.push('/dashboard');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to create account');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

@@ -1,19 +1,31 @@
-import { Metadata } from 'next';
+'use client';
+
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { PublicProfile } from '@/features/profiles/components/public-profile';
-import { mockUsers } from '@/lib/data/mock-data';
+import { useUser } from '@/hooks/use-users';
+import { Loader2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Profile',
-  description: 'View user profile',
-};
-
 export default function ProfilePage({ params }: { params: { id: string } }) {
-  const user = mockUsers.find((u) => u.id === params.id);
+  const { data: user, isLoading, error } = useUser(params.id);
 
-  if (!user) {
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <main className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading profile...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !user) {
     notFound();
   }
 

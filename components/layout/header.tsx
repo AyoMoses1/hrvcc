@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { MainNav } from './main-nav';
 import { UserNav } from './user-nav';
@@ -11,10 +12,14 @@ export function Header() {
       <div className="container flex h-16 items-center">
         {/* Logo */}
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">HRVCC</span>
-          </div>
-          <span className="hidden font-bold sm:inline-block">HRVCC Member Directory</span>
+          <Image
+            src="/logos/1.png"
+            alt="HRVCC Logo"
+            width={180}
+            height={60}
+            className="h-14 w-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Desktop Navigation */}

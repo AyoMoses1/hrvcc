@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -7,11 +8,14 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <span className="text-xs font-bold text-primary-foreground">HRVCC</span>
-              </div>
-              <span className="font-bold">HRVCC Member Directory</span>
+            <Link href="/" className="mb-4 flex items-center">
+              <Image
+                src="/logos/2.png"
+                alt="HRVCC Logo"
+                width={200}
+                height={70}
+                className="h-16 w-auto object-contain"
+              />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               Connecting Houston&apos;s Veteran & Military Businesses
