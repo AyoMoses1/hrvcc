@@ -82,24 +82,13 @@ export const memberPlansApi = {
     return transformMemberPlan(data);
   },
 
-  create: async (
-    planData: CreateMemberPlanData,
-  ): Promise<MemberPlan> => {
-    const { data } = await apiClient.post<MemberPlan>(
-      '/member-plans',
-      planData,
-    );
+  create: async (planData: CreateMemberPlanData): Promise<MemberPlan> => {
+    const { data } = await apiClient.post<MemberPlan>('/member-plans', planData);
     return data;
   },
 
-  update: async (
-    id: string,
-    planData: UpdateMemberPlanData,
-  ): Promise<MemberPlan> => {
-    const { data } = await apiClient.patch<MemberPlan>(
-      `/member-plans/${id}`,
-      planData,
-    );
+  update: async (id: string, planData: UpdateMemberPlanData): Promise<MemberPlan> => {
+    const { data } = await apiClient.patch<MemberPlan>(`/member-plans/${id}`, planData);
     return data;
   },
 
@@ -107,4 +96,3 @@ export const memberPlansApi = {
     await apiClient.delete(`/member-plans/${id}`);
   },
 };
-

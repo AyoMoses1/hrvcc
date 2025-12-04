@@ -36,14 +36,15 @@ export function ExplorePage() {
           user.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
           user.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
           user.skills?.some((s) => s.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
-          user.services?.some((s) => s.toLowerCase().includes(debouncedSearch.toLowerCase()))
+          user.services?.some((s) => s.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
       );
     }
 
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(
         (user) =>
-          user.skills?.includes(selectedCategory) || user.services?.includes(selectedCategory)
+          user.skills?.includes(selectedCategory) ||
+          user.services?.some((s) => s.name === selectedCategory)
       );
     }
 

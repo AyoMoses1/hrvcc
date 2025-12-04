@@ -27,8 +27,7 @@ export function useCreateMemberPlan() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateMemberPlanData) =>
-      memberPlansApi.create(data),
+    mutationFn: (data: CreateMemberPlanData) => memberPlansApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['member-plans'] });
       toast.success('Member plan created successfully');
@@ -69,5 +68,3 @@ export function useDeleteMemberPlan() {
     },
   });
 }
-
-

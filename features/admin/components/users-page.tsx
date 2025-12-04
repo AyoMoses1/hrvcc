@@ -99,7 +99,7 @@ export function UsersPage() {
       ) : filteredUsers.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <User className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="text-muted-foreground">No users found.</p>
           </CardContent>
         </Card>
@@ -110,7 +110,7 @@ export function UsersPage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="mb-2 flex items-center gap-3">
                       <h3 className="text-lg font-semibold">{user.name}</h3>
                       <Badge variant="outline">{user.category}</Badge>
                       {user.verified && (
@@ -120,15 +120,15 @@ export function UsersPage() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-muted-foreground mb-2">{user.title || user.email}</p>
+                    <p className="mb-2 text-muted-foreground">{user.title || user.email}</p>
                     {user.location && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                      <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         <span>{user.location}</span>
                       </div>
                     )}
                     {user.bio && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{user.bio}</p>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">{user.bio}</p>
                     )}
                   </div>
                   <Button variant="outline" size="sm" asChild>
@@ -143,5 +143,3 @@ export function UsersPage() {
     </div>
   );
 }
-
-

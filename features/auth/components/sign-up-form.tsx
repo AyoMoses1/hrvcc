@@ -91,9 +91,7 @@ export function SignUpForm() {
             <SelectItem value="Organization">Organization</SelectItem>
           </SelectContent>
         </Select>
-        {errors.category && (
-          <p className="text-sm text-destructive">{errors.category.message}</p>
-        )}
+        {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
       </div>
 
       <div className="space-y-2">
