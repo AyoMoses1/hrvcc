@@ -12,9 +12,9 @@ export function Footer() {
               <Image
                 src="/logos/2.png"
                 alt="HRVCC Logo"
-                width={200}
-                height={70}
-                className="h-16 w-auto object-contain"
+                width={400}
+                height={85}
+                className="h-20 w-auto object-contain"
               />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">

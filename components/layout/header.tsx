@@ -15,9 +15,9 @@ export function Header() {
           <Image
             src="/logos/1.png"
             alt="HRVCC Logo"
-            width={180}
-            height={60}
-            className="h-14 w-auto object-contain"
+            width={400}
+            height={85}
+            className="h-20 w-auto object-contain"
             priority
           />
         </Link>
