@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import {
   User,
   Briefcase,
@@ -12,6 +13,9 @@ import {
   TrendingUp,
   Users,
   BellRing,
+  AlertCircle,
+  CheckCircle,
+  ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -27,8 +31,70 @@ export function DashboardPage({ user }: DashboardPageProps) {
     { label: 'Messages', value: '24', icon: MessageSquare, change: '8 unread' },
   ];
 
+  // Check if KYC is required or incomplete
+  const kycRequired = user.kycRequired || user.kycStep !== 'completed';
+  const kycStatus = user.kycStatus || 'pending';
+  const isKycSubmitted = kycStatus === 'submitted';
+  const isKycApproved = kycStatus === 'approved';
+
   return (
     <div className="container py-8">
+      {/* KYC Alert Banner */}
+      {kycRequired && !isKycApproved && (
+        <Card
+          className={`mb-6 border-2 ${isKycSubmitted ? 'border-yellow-500 bg-yellow-50' : 'border-primary bg-primary/5'}`}
+        >
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-4">
+              {isKycSubmitted ? (
+                <CheckCircle className="h-8 w-8 text-yellow-600" />
+              ) : (
+                <AlertCircle className="h-8 w-8 text-primary" />
+              )}
+              <div>
+                <h3 className="font-semibold">
+                  {isKycSubmitted ? 'KYC Under Review' : 'Complete Your Business Profile'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {isKycSubmitted
+                    ? 'Your profile is being reviewed. You will be notified once approved.'
+                    : 'Complete your KYC to get verified and appear in the member directory.'}
+                </p>
+              </div>
+            </div>
+            {!isKycSubmitted && (
+              <Button asChild>
+                <Link href="/kyc">
+                  Complete KYC
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            {isKycSubmitted && (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                Pending Review
+              </Badge>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Verified Badge */}
+      {isKycApproved && (
+        <Card className="mb-6 border-2 border-green-500 bg-green-50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+            <div>
+              <h3 className="font-semibold text-green-800">Verified Business</h3>
+              <p className="text-sm text-green-700">
+                Your business profile has been verified and is visible in the member directory.
+              </p>
+            </div>
+            <Badge className="ml-auto bg-green-600">Verified</Badge>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">Welcome back, {user.name}!</h1>
@@ -225,4 +291,3 @@ export function DashboardPage({ user }: DashboardPageProps) {
     </div>
   );
 }
-

@@ -10,12 +10,8 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: {
-    email: string;
-    password: string;
-    name: string;
-    category: 'Professional' | 'Business' | 'Organization';
-  }) => Promise<void>;
+  register: (data: import('./api/auth').RegisterData) => Promise<void>;
+  setAuth: (user: AuthResponse['user'], token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -72,18 +68,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (data: {
-    email: string;
-    password: string;
-    name: string;
-    category: 'Professional' | 'Business' | 'Organization';
-  }) => {
+  const register = async (data: import('./api/auth').RegisterData) => {
     const response = await authApi.register(data);
     setUser(response.user);
     setToken(response.token);
     localStorage.setItem('auth_token', response.token);
     setAuthCookie(response.token);
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.token}`;
+  };
+
+  const setAuth = (user: AuthResponse['user'], newToken: string) => {
+    setUser(user);
+    setToken(newToken);
+    localStorage.setItem('auth_token', newToken);
+    setAuthCookie(newToken);
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
   };
 
   const logout = () => {
@@ -108,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, login, register, logout, refreshUser }}
+      value={{ user, token, isLoading, login, register, setAuth, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>
@@ -122,4 +121,3 @@ export function useAuth() {
   }
   return context;
 }
-

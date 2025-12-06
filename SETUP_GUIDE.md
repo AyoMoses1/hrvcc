@@ -106,14 +106,11 @@ Copy the output and paste it as `NEXTAUTH_SECRET` in your `.env` file.
 ## Step 5: Initialize Database
 
 ```bash
-# Generate Prisma Client
-pnpm prisma generate
+# Run migrations to create database tables
+pnpm migrate
 
-# Create database tables
-pnpm prisma migrate dev --name init
-
-# Open Prisma Studio to view database (optional)
-pnpm prisma studio
+# Or manually using psql:
+psql $DATABASE_URL -f migrations/001_create_users_table.sql
 ```
 
 ## Step 6: Run Development Server
@@ -143,14 +140,14 @@ Visit [http://localhost:3000](http://localhost:3000) 🎉
 To access admin panel, create an admin user directly in database:
 
 ```bash
-pnpm prisma studio
+psql $DATABASE_URL
 ```
 
-1. Open `User` table
-2. Find your user
-3. Change `role` from `PROFESSIONAL` to `ADMIN`
-4. Save changes
-5. Visit [http://localhost:3000/admin](http://localhost:3000/admin)
+```sql
+UPDATE users SET role = 'ADMIN' WHERE email = 'your-email@example.com';
+```
+
+Then visit [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ## Troubleshooting
 
@@ -158,7 +155,7 @@ pnpm prisma studio
 
 ```bash
 # Test database connection
-pnpm prisma db push
+psql $DATABASE_URL -c "SELECT 1;"
 ```
 
 If fails:
@@ -184,9 +181,6 @@ pnpm dev
 ### Module Not Found Errors
 
 ```bash
-# Regenerate Prisma Client
-pnpm prisma generate
-
 # Clear TypeScript cache
 rm -rf .next tsconfig.tsbuildinfo
 ```
@@ -196,7 +190,7 @@ rm -rf .next tsconfig.tsbuildinfo
 ✅ Customize branding in `lib/constants.ts`  
 ✅ Add your logo to `public/`  
 ✅ Modify theme colors in `tailwind.config.ts`  
-✅ Extend database models in `prisma/schema.prisma`  
+✅ Add new migrations in `migrations/` directory  
 ✅ Add seed data for testing
 
 ## Production Deployment
@@ -210,4 +204,3 @@ Check the full documentation in [README.md](./README.md)
 ---
 
 Happy building! 🚀
-

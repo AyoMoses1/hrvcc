@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Send } from 'lucide-react';
+import { Search, Send, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Conversation {
   id: string;
@@ -43,6 +44,7 @@ const mockConversations: Conversation[] = [
 ];
 
 export function MessagesPage() {
+  const router = useRouter();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
     mockConversations[0].id
   );
@@ -52,6 +54,12 @@ export function MessagesPage() {
 
   return (
     <div className="container py-8">
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+      </div>
       <h1 className="mb-6 text-3xl font-bold">Messages</h1>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -86,9 +94,7 @@ export function MessagesPage() {
                       <p className="line-clamp-1 text-sm text-muted-foreground">
                         {conversation.lastMessage}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {conversation.timestamp}
-                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">{conversation.timestamp}</p>
                     </div>
                   </div>
                 </button>
@@ -151,4 +157,3 @@ export function MessagesPage() {
     </div>
   );
 }
-

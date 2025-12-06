@@ -65,9 +65,15 @@ export function EventsPage() {
     }
 
     if (selectedDate) {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      // Format date as YYYY-MM-DD for API
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       filterParams.from = dateStr;
       filterParams.to = dateStr;
+      // Don't set upcomingOnly when filtering by specific date
+      delete filterParams.upcomingOnly;
     } else {
       filterParams.upcomingOnly = true;
     }

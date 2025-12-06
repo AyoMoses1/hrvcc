@@ -1,7 +1,8 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+// Use Next.js API routes instead of external API
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -21,7 +22,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 apiClient.interceptors.response.use(
@@ -53,6 +54,5 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
-

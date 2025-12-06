@@ -12,6 +12,23 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 
+// Helper type for normalized service
+interface ServiceData {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  price?: string;
+}
+
+// Helper function to normalize service data
+function normalizeService(service: string | ServiceData, index: number): ServiceData {
+  if (typeof service === 'string') {
+    return { id: `service-${index}`, name: service };
+  }
+  return service;
+}
+
 export default function ServiceDetailsPage({
   params,
 }: {
@@ -19,10 +36,17 @@ export default function ServiceDetailsPage({
 }) {
   const { data: user, isLoading, error } = useUser(params.id);
   const { user: currentUser } = useAuth();
-  const service = user?.services?.find((s) => s.id === params.serviceId) || 
-                  (user?.services && !isNaN(parseInt(params.serviceId)) 
-                    ? user.services[parseInt(params.serviceId)] 
-                    : undefined);
+
+  // Find and normalize the service
+  const rawService = user?.services?.find((s, idx) => {
+    if (typeof s === 'string') {
+      return `service-${idx}` === params.serviceId || idx.toString() === params.serviceId;
+    }
+    return s.id === params.serviceId;
+  });
+
+  const serviceIndex = user?.services?.indexOf(rawService as any) ?? 0;
+  const service = rawService ? normalizeService(rawService, serviceIndex) : undefined;
 
   if (isLoading) {
     return (
@@ -60,8 +84,8 @@ export default function ServiceDetailsPage({
           </div>
 
           <div className="grid gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="border-0 shadow-lg overflow-hidden">
+            <div className="space-y-6 lg:col-span-2">
+              <Card className="overflow-hidden border-0 shadow-lg">
                 {service.image ? (
                   <div className="relative h-96 w-full overflow-hidden">
                     <img
@@ -87,9 +111,9 @@ export default function ServiceDetailsPage({
                   </div>
                 )}
                 <CardContent className="p-8">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="mb-4 flex items-start justify-between">
                     <div>
-                      <h1 className="text-3xl md:text-4xl font-bold mb-2">{service.name}</h1>
+                      <h1 className="mb-2 text-3xl font-bold md:text-4xl">{service.name}</h1>
                       {service.price && (
                         <p className="text-2xl font-semibold text-primary">{service.price}</p>
                       )}
@@ -100,14 +124,14 @@ export default function ServiceDetailsPage({
                   </div>
 
                   {service.description && (
-                    <div className="prose prose-sm max-w-none mb-6">
-                      <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                    <div className="prose prose-sm mb-6 max-w-none">
+                      <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
                         {service.description}
                       </p>
                     </div>
                   )}
 
-                  <div className="flex flex-wrap gap-3 pt-6 border-t">
+                  <div className="flex flex-wrap gap-3 border-t pt-6">
                     <Button size="lg" className="shadow-md">
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Contact Provider
@@ -123,11 +147,11 @@ export default function ServiceDetailsPage({
             </div>
 
             <div className="space-y-6">
-              <Card className="border-0 shadow-lg sticky top-24">
+              <Card className="sticky top-24 border-0 shadow-lg">
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="mb-6 flex items-center gap-3">
                     {user.image ? (
-                      <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-background">
+                      <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-background">
                         <img
                           src={user.image}
                           alt={user.name}
@@ -146,7 +170,7 @@ export default function ServiceDetailsPage({
                         />
                       </div>
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-xl font-bold text-primary-foreground border-2 border-background">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary text-xl font-bold text-primary-foreground">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -169,7 +193,7 @@ export default function ServiceDetailsPage({
                       </span>
                     </div>
 
-                    <div className="pt-3 border-t">
+                    <div className="border-t pt-3">
                       <Button variant="outline" className="w-full" asChild>
                         <Link href={`/profile/${user.id}`}>View Full Profile</Link>
                       </Button>
@@ -185,4 +209,3 @@ export default function ServiceDetailsPage({
     </>
   );
 }
-

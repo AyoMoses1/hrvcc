@@ -1,15 +1,15 @@
 'use client';
 
+import { OnboardingForm } from '@/features/auth/components/onboarding-form';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { SimpleSignupForm } from '@/features/auth/components/simple-signup-form';
 
-export default function SignUpPage() {
+export default function OnboardingPage() {
   return (
     <>
       <Header />
       <main className="flex-1">
-        <SimpleSignupForm />
+        <OnboardingForm />
       </main>
       <Footer />
     </>

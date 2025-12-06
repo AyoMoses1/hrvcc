@@ -12,11 +12,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Download, User, MapPin, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import {
+  Search,
+  Download,
+  User,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  MoreVertical,
+  Shield,
+  ShieldCheck,
+  ShieldX,
+  Clock,
+} from 'lucide-react';
 import { useUsers } from '@/hooks/use-users';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useMemo } from 'react';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,41 +123,127 @@ export function UsersPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {filteredUsers.map((user) => (
-            <Card key={user.id}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="mb-2 flex items-center gap-3">
-                      <h3 className="text-lg font-semibold">{user.name}</h3>
-                      <Badge variant="outline">{user.category}</Badge>
-                      {user.verified && (
-                        <Badge variant="secondary" className="text-xs">
-                          <CheckCircle className="mr-1 h-3 w-3" />
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="mb-2 text-muted-foreground">{user.title || user.email}</p>
-                    {user.location && (
-                      <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{user.location}</span>
-                      </div>
-                    )}
-                    {user.bio && (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">{user.bio}</p>
-                    )}
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/profile/${user.id}`}>View Profile</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="border-b bg-muted/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Location
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Verified
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Last Login
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Joined
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y bg-background">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="transition-colors hover:bg-muted/50">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium">{user.name}</div>
+                            <div className="text-sm text-muted-foreground">{user.title}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <Badge variant="outline">{user.category}</Badge>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                        {user.email || 'N/A'}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                        {user.location ? (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            <span>{user.location}</span>
+                          </div>
+                        ) : (
+                          'N/A'
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        {user.verified ? (
+                          <Badge variant="secondary" className="text-xs">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            Verified
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            <XCircle className="mr-1 h-3 w-3" />
+                            Not Verified
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            {user.joinedDate
+                              ? new Date(user.joinedDate).toLocaleDateString()
+                              : 'N/A'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                        {user.joinedDate ? new Date(user.joinedDate).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/profile/${user.id}`}>View Profile</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <ShieldCheck className="mr-2 h-4 w-4" />
+                              Verify User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <ShieldX className="mr-2 h-4 w-4" />
+                              Revoke Verification
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive">
+                              <Shield className="mr-2 h-4 w-4" />
+                              Suspend User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

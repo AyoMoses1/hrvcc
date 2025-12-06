@@ -12,8 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, MapPin, Star, Download, Loader2 } from 'lucide-react';
-import { exportMemberDirectoryCSV } from '@/lib/utils/csv';
+import { Search, MapPin, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUsers } from '@/hooks/use-users';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -28,7 +27,8 @@ export function ExplorePage() {
   const allUsers = usersData?.data || [];
 
   const filteredUsers = useMemo(() => {
-    let filtered = allUsers.filter((user) => user.category === 'Business');
+    // Only show verified businesses
+    let filtered = allUsers.filter((user) => user.category === 'Business' && user.verified);
 
     if (debouncedSearch) {
       filtered = filtered.filter(
@@ -36,7 +36,10 @@ export function ExplorePage() {
           user.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
           user.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
           user.skills?.some((s) => s.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
-          user.services?.some((s) => s.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
+          user.services?.some((s) => {
+            const serviceName = typeof s === 'string' ? s : s.name;
+            return serviceName.toLowerCase().includes(debouncedSearch.toLowerCase());
+          })
       );
     }
 
@@ -44,7 +47,10 @@ export function ExplorePage() {
       filtered = filtered.filter(
         (user) =>
           user.skills?.includes(selectedCategory) ||
-          user.services?.some((s) => s.name === selectedCategory)
+          user.services?.some((s) => {
+            const serviceName = typeof s === 'string' ? s : s.name;
+            return serviceName === selectedCategory;
+          })
       );
     }
 
@@ -54,19 +60,11 @@ export function ExplorePage() {
   return (
     <div className="container py-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8">
         <div>
           <h1 className="mb-2 text-3xl font-bold">Member Directory</h1>
           <p className="text-muted-foreground">Discover businesses in the HRVCC community</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => exportMemberDirectoryCSV(filteredUsers)}
-          disabled={isLoading}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Export CSV
-        </Button>
       </div>
 
       {/* Search and Filters */}

@@ -20,8 +20,8 @@ A world-class, enterprise-grade membership platform built with Next.js 14+, conn
 - **Framework**: Next.js 14+ (App Router)
 - **Language**: TypeScript (Strict Mode)
 - **Styling**: Tailwind CSS + ShadCN/UI
-- **Auth**: NextAuth.js v5 with Prisma Adapter
-- **Database**: PostgreSQL with Prisma ORM
+- **Auth**: Custom JWT-based authentication
+- **Database**: PostgreSQL with direct queries (pg library)
 - **State Management**: React Query (TanStack Query)
 - **Forms**: React Hook Form + Zod Validation
 - **Icons**: Lucide React
@@ -65,14 +65,11 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 3. **Database Setup**
 
 ```bash
-# Generate Prisma Client
-pnpm prisma generate
-
 # Run migrations
-pnpm prisma migrate dev
+pnpm migrate
 
-# Seed database (optional)
-pnpm prisma db seed
+# Or manually:
+psql $DATABASE_URL -f migrations/001_create_users_table.sql
 ```
 
 4. **Run Development Server**
@@ -124,8 +121,8 @@ membership-nextjs/
 │   ├── use-auth.ts
 │   ├── use-debounce.ts
 │   └── use-media-query.ts
-├── prisma/                # Database schema
-│   └── schema.prisma
+├── migrations/            # SQL migration files
+│   └── 001_create_users_table.sql
 ├── middleware.ts          # Route protection
 └── package.json
 ```
@@ -270,7 +267,7 @@ This is a production-ready template. To customize:
 
 1. Update branding in `lib/constants.ts`
 2. Modify color scheme in `tailwind.config.ts`
-3. Add your database models to `prisma/schema.prisma`
+3. Add your database migrations to `migrations/` directory
 4. Extend features in respective `features/` modules
 
 ## 📝 License
@@ -287,4 +284,3 @@ MIT License - feel free to use for commercial projects.
 ---
 
 **WeAfriq** - Connecting Africa's Future 🌍
-

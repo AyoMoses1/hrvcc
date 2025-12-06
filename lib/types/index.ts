@@ -2,20 +2,23 @@ export interface User {
   id: string;
   name: string;
   title: string;
-  category: 'Professional' | 'Business' | 'Organization';
+  category: 'Business' | 'Organization';
   location: string;
   country: string;
   image?: string;
   banner?: string;
   bio: string;
   skills?: string[];
-  services?: Array<{
-    id: string;
-    name: string;
-    description?: string;
-    image?: string;
-    price?: string;
-  }>;
+  services?: Array<
+    | string
+    | {
+        id: string;
+        name: string;
+        description?: string;
+        image?: string;
+        price?: string;
+      }
+  >;
   verified: boolean;
   rating?: number;
   reviews?: number;

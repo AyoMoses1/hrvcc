@@ -86,7 +86,6 @@ export function SignUpForm() {
             <SelectValue placeholder="Select your category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Professional">Professional</SelectItem>
             <SelectItem value="Business">Business</SelectItem>
             <SelectItem value="Organization">Organization</SelectItem>
           </SelectContent>

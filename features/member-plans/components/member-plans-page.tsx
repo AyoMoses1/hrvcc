@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -26,6 +27,9 @@ import {
 import { useMemberPlans, useCreateMemberPlan } from '@/hooks/use-member-plans';
 
 export function MemberPlansPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSignupFlow = searchParams.get('signup') === 'true';
   const { data: plansData, isLoading, error } = useMemberPlans({ page: 1, limit: 100 });
   const plans = plansData?.data || [];
   const createPlanMutation = useCreateMemberPlan();
@@ -39,6 +43,13 @@ export function MemberPlansPage() {
     features: '',
     description: '',
   });
+
+  const handlePlanSelect = (planId: string) => {
+    if (isSignupFlow) {
+      // Redirect to onboarding form with selected plan
+      router.push(`/auth/onboarding?planId=${planId}`);
+    }
+  };
 
   const handleAddPlan = async () => {
     if (!newPlan.category || !newPlan.name) {
@@ -84,8 +95,14 @@ export function MemberPlansPage() {
     <div className="container py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="mb-2 text-3xl font-bold">Member Plans</h1>
-          <p className="text-muted-foreground">Manage membership plans and pricing options</p>
+          <h1 className="mb-2 text-3xl font-bold">
+            {isSignupFlow ? 'Select Your Membership Plan' : 'Member Plans'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isSignupFlow
+              ? 'Choose a plan to continue with your registration'
+              : 'Manage membership plans and pricing options'}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}>
@@ -266,6 +283,13 @@ export function MemberPlansPage() {
                   </div>
                 </div>
               </CardContent>
+              {isSignupFlow && (
+                <CardFooter>
+                  <Button className="w-full" onClick={() => handlePlanSelect(plan.id)}>
+                    Select Plan
+                  </Button>
+                </CardFooter>
+              )}
             </Card>
           ))}
         </div>

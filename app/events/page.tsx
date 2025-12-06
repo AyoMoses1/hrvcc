@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import { EventsPage } from '@/features/events/components/events-page';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 export const metadata: Metadata = {
   title: 'Events Calendar',
@@ -7,5 +9,13 @@ export const metadata: Metadata = {
 };
 
 export default function Events() {
-  return <EventsPage />;
+  return (
+    <>
+      <Header />
+      <main className="flex-1">
+        <EventsPage />
+      </main>
+      <Footer />
+    </>
+  );
 }

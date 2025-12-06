@@ -7,17 +7,25 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
 
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/explore', label: 'Explore' },
-  { href: '/jobs', label: 'Jobs' },
+  { href: '/events', label: 'Events' },
+  { href: '/member-plans', label: 'Plans' },
   { href: '/about', label: 'About' },
 ];
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  // Add Jobs if user is logged in
+  const allNavItems = user
+    ? [...navItems.slice(0, 2), { href: '/jobs', label: 'Jobs' }, ...navItems.slice(2)]
+    : navItems;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -39,7 +47,7 @@ export function MobileNav() {
             </div>
             <span className="font-bold">HRVCC Member Directory</span>
           </Link>
-          {navItems.map((item) => (
+          {allNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
