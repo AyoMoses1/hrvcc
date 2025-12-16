@@ -27,7 +27,9 @@ export function FeaturedProfiles() {
           </div>
         ) : error ? (
           <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">Unable to load featured members. Please try again later.</p>
+            <p className="text-muted-foreground">
+              Unable to load featured members. Please try again later.
+            </p>
           </div>
         ) : users.length === 0 ? (
           <div className="flex items-center justify-center py-12">
@@ -36,45 +38,45 @@ export function FeaturedProfiles() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {users.slice(0, 4).map((user) => (
-            <Card key={user.id} className="overflow-hidden transition-shadow hover:shadow-lg">
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
-                    {user.name.charAt(0)}
-                  </div>
-                  {user.verified && (
-                    <Badge variant="secondary" className="text-xs">
-                      Verified
-                    </Badge>
-                  )}
-                </div>
-
-                <h3 className="mb-1 font-semibold">{user.name}</h3>
-                <p className="mb-3 text-sm text-muted-foreground">{user.title}</p>
-
-                <div className="mb-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>{user.location}</span>
-                  </div>
-                  {user.rating && (
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{user.rating}</span>
+              <Card key={user.id} className="overflow-hidden transition-shadow hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
+                      {user.name.charAt(0)}
                     </div>
-                  )}
-                </div>
+                    {user.verified && (
+                      <Badge variant="secondary" className="text-xs">
+                        Verified
+                      </Badge>
+                    )}
+                  </div>
 
-                <Badge variant="outline" className="text-xs">
-                  {user.category}
-                </Badge>
-              </CardContent>
+                  <h3 className="mb-1 font-semibold">{user.name}</h3>
+                  <p className="mb-3 text-sm text-muted-foreground">{user.title}</p>
 
-              <CardFooter className="border-t bg-muted/50 p-4">
-                <Button variant="ghost" size="sm" className="w-full" asChild>
-                  <Link href={`/profile/${user.id}`}>View Profile</Link>
-                </Button>
-              </CardFooter>
+                  <div className="mb-4 flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      <span>{user.location}</span>
+                    </div>
+                    {user.rating && (
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <span>{user.rating}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Badge variant="outline" className="text-xs">
+                    {user.category}
+                  </Badge>
+                </CardContent>
+
+                <CardFooter className="border-t bg-muted/50 p-4">
+                  <Button variant="ghost" size="sm" className="w-full" asChild>
+                    <Link href={`/profile/${(user as any).slug || user.id}`}>View Profile</Link>
+                  </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
@@ -89,4 +91,3 @@ export function FeaturedProfiles() {
     </section>
   );
 }
-

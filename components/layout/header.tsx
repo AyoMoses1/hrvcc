@@ -13,11 +13,11 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Image
-            src="/logos/1.png"
+            src="/logos/img-639---logo-1.png"
             alt="HRVCC Logo"
-            width={400}
-            height={85}
-            className="h-20 w-auto object-contain"
+            width={280}
+            height={60}
+            className="h-14 w-auto object-contain"
             priority
           />
         </Link>

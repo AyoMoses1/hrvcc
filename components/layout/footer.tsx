@@ -10,11 +10,11 @@ export function Footer() {
           <div>
             <Link href="/" className="mb-4 flex items-center">
               <Image
-                src="/logos/2.png"
+                src="/logos/img-639---logo-1.png"
                 alt="HRVCC Logo"
-                width={400}
-                height={85}
-                className="h-20 w-auto object-contain"
+                width={240}
+                height={70}
+                className="h-16 w-auto object-contain"
               />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">

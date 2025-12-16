@@ -76,7 +76,7 @@ export default function ServiceDetailsPage({
         <div className="container py-8">
           <div className="mb-6">
             <Button variant="ghost" asChild>
-              <Link href={`/profile/${user.id}`}>
+              <Link href={`/profile/${(user as any).slug || user.id}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Profile
               </Link>
@@ -195,7 +195,9 @@ export default function ServiceDetailsPage({
 
                     <div className="border-t pt-3">
                       <Button variant="outline" className="w-full" asChild>
-                        <Link href={`/profile/${user.id}`}>View Full Profile</Link>
+                        <Link href={`/profile/${(user as any).slug || user.id}`}>
+                          View Full Profile
+                        </Link>
                       </Button>
                     </div>
                   </div>

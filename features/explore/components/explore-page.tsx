@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Search, MapPin, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useUsers } from '@/hooks/use-users';
+import { useBusinesses } from '@/hooks/use-businesses';
 import { useDebounce } from '@/hooks/use-debounce';
 import { categories } from '@/lib/data/mock-data';
 
@@ -23,20 +23,29 @@ export function ExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const { data: usersData, isLoading, error } = useUsers({ page: 1, limit: 100 });
-  const allUsers = usersData?.data || [];
+  const {
+    data: businessesData,
+    isLoading,
+    error,
+  } = useBusinesses({
+    page: 1,
+    limit: 100,
+    verified: true, // Only show verified businesses
+  });
+  const allBusinesses = businessesData?.data || [];
 
-  const filteredUsers = useMemo(() => {
-    // Only show verified businesses
-    let filtered = allUsers.filter((user) => user.category === 'Business' && user.verified);
+  const filteredBusinesses = useMemo(() => {
+    // Start with verified businesses (already filtered by API)
+    let filtered = allBusinesses;
 
     if (debouncedSearch) {
       filtered = filtered.filter(
-        (user) =>
-          user.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          user.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          user.skills?.some((s) => s.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
-          user.services?.some((s) => {
+        (business) =>
+          business.businessName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          business.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          business.description?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          business.skills?.some((s) => s.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+          business.services?.some((s) => {
             const serviceName = typeof s === 'string' ? s : s.name;
             return serviceName.toLowerCase().includes(debouncedSearch.toLowerCase());
           })
@@ -45,9 +54,9 @@ export function ExplorePage() {
 
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(
-        (user) =>
-          user.skills?.includes(selectedCategory) ||
-          user.services?.some((s) => {
+        (business) =>
+          business.skills?.includes(selectedCategory) ||
+          business.services?.some((s) => {
             const serviceName = typeof s === 'string' ? s : s.name;
             return serviceName === selectedCategory;
           })
@@ -55,7 +64,7 @@ export function ExplorePage() {
     }
 
     return filtered;
-  }, [allUsers, debouncedSearch, selectedCategory]);
+  }, [allBusinesses, debouncedSearch, selectedCategory]);
 
   return (
     <div className="container py-8">
@@ -99,67 +108,72 @@ export function ExplorePage() {
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="ml-4 text-muted-foreground">Loading users...</p>
+          <p className="ml-4 text-muted-foreground">Loading businesses...</p>
         </div>
       ) : error ? (
         <div className="py-20 text-center">
-          <p className="text-destructive">Failed to load users. Please try again.</p>
+          <p className="text-destructive">Failed to load businesses. Please try again.</p>
         </div>
       ) : (
         <>
           <div className="mb-4 text-sm text-muted-foreground">
-            Showing {filteredUsers.length} results
+            Showing {filteredBusinesses.length} results
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredUsers.map((user, index) => (
+            {filteredBusinesses.map((business, index) => (
               <Card
-                key={user.id}
-                className="card-hover animate-fade-in overflow-hidden"
+                key={business.id}
+                className="card-hover animate-fade-in flex flex-col overflow-hidden"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <CardContent className="p-6">
+                <CardContent className="flex flex-1 flex-col p-6">
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
-                      {user.name.charAt(0)}
+                      {business.businessName.charAt(0)}
                     </div>
-                    {user.verified && (
+                    {business.verified && (
                       <Badge variant="secondary" className="text-xs">
                         Verified
                       </Badge>
                     )}
                   </div>
 
-                  <h3 className="mb-1 font-semibold">{user.name}</h3>
-                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{user.title}</p>
+                  <h3 className="mb-1 font-semibold">{business.businessName}</h3>
+                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+                    {business.title}
+                  </p>
 
                   <div className="mb-4 flex items-center gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      <span>{user.location}</span>
+                      <span>{business.location || business.officeAddress?.city}</span>
                     </div>
-                    {user.rating && (
+                    {business.rating && (
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span>{user.rating}</span>
+                        <span>{business.rating}</span>
                       </div>
                     )}
                   </div>
 
                   <Badge variant="outline" className="text-xs">
-                    {user.category}
+                    {business.category}
                   </Badge>
+
+                  {/* Spacer to push footer to bottom */}
+                  <div className="mt-auto"></div>
                 </CardContent>
 
-                <CardFooter className="border-t bg-muted/50 p-4">
+                <CardFooter className="mt-auto border-t bg-muted/50 p-4">
                   <Button variant="ghost" size="sm" className="w-full" asChild>
-                    <Link href={`/profile/${user.id}`}>View Profile</Link>
+                    <Link href={`/profile/${business.slug || business.id}`}>View Profile</Link>
                   </Button>
                 </CardFooter>
               </Card>
             ))}
 
-            {filteredUsers.length === 0 && (
+            {filteredBusinesses.length === 0 && (
               <div className="col-span-full py-20 text-center">
                 <p className="text-lg text-muted-foreground">
                   No results found. Try adjusting your filters.

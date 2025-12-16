@@ -264,7 +264,7 @@ export function BusinessesPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/profile/${business.id}`}>
+                              <Link href={`/profile/${business.slug || business.id}`}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Profile
                               </Link>

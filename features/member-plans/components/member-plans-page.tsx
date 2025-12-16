@@ -25,10 +25,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useMemberPlans, useCreateMemberPlan } from '@/hooks/use-member-plans';
+import { useAuth } from '@/lib/auth-context';
 
 export function MemberPlansPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const isSignupFlow = searchParams.get('signup') === 'true';
   const { data: plansData, isLoading, error } = useMemberPlans({ page: 1, limit: 100 });
   const plans = plansData?.data || [];
@@ -104,111 +107,113 @@ export function MemberPlansPage() {
               : 'Manage membership plans and pricing options'}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Plan
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Add New Member Plan</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      value={newPlan.category}
-                      onChange={(e) => setNewPlan({ ...newPlan, category: e.target.value })}
-                      placeholder="e.g., Basic, Professional"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="name">Plan Name</Label>
-                    <Input
-                      id="name"
-                      value={newPlan.name}
-                      onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                      placeholder="e.g., Starter Plan"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    value={newPlan.description}
-                    onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                    placeholder="Plan description"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="monthly">Monthly Price ($)</Label>
-                    <Input
-                      id="monthly"
-                      type="number"
-                      value={newPlan.monthly}
-                      onChange={(e) => setNewPlan({ ...newPlan, monthly: e.target.value })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="yearly">Yearly Price ($)</Label>
-                    <Input
-                      id="yearly"
-                      type="number"
-                      value={newPlan.yearly}
-                      onChange={(e) => setNewPlan({ ...newPlan, yearly: e.target.value })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="oneTime">One-Time Price ($)</Label>
-                    <Input
-                      id="oneTime"
-                      type="number"
-                      value={newPlan.oneTime}
-                      onChange={(e) => setNewPlan({ ...newPlan, oneTime: e.target.value })}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="features">Features (comma-separated)</Label>
-                  <Input
-                    id="features"
-                    value={newPlan.features}
-                    onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                    placeholder="Feature 1, Feature 2, Feature 3"
-                  />
-                </div>
-                <Button
-                  onClick={handleAddPlan}
-                  className="w-full"
-                  disabled={createPlanMutation.isPending}
-                >
-                  {createPlanMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    'Add Plan'
-                  )}
+        {isAdmin && (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportCSV}>
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Plan
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Add New Member Plan</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Input
+                        id="category"
+                        value={newPlan.category}
+                        onChange={(e) => setNewPlan({ ...newPlan, category: e.target.value })}
+                        placeholder="e.g., Basic, Professional"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="name">Plan Name</Label>
+                      <Input
+                        id="name"
+                        value={newPlan.name}
+                        onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                        placeholder="e.g., Starter Plan"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      value={newPlan.description}
+                      onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                      placeholder="Plan description"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="monthly">Monthly Price ($)</Label>
+                      <Input
+                        id="monthly"
+                        type="number"
+                        value={newPlan.monthly}
+                        onChange={(e) => setNewPlan({ ...newPlan, monthly: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="yearly">Yearly Price ($)</Label>
+                      <Input
+                        id="yearly"
+                        type="number"
+                        value={newPlan.yearly}
+                        onChange={(e) => setNewPlan({ ...newPlan, yearly: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="oneTime">One-Time Price ($)</Label>
+                      <Input
+                        id="oneTime"
+                        type="number"
+                        value={newPlan.oneTime}
+                        onChange={(e) => setNewPlan({ ...newPlan, oneTime: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="features">Features (comma-separated)</Label>
+                    <Input
+                      id="features"
+                      value={newPlan.features}
+                      onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
+                      placeholder="Feature 1, Feature 2, Feature 3"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleAddPlan}
+                    className="w-full"
+                    disabled={createPlanMutation.isPending}
+                  >
+                    {createPlanMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Add Plan'
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
 
       {isLoading ? (

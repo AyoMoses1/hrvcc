@@ -73,6 +73,15 @@ export interface LoginData {
   password: string;
 }
 
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface ResetPasswordData {
+  token: string;
+  password: string;
+}
+
 export interface AuthResponse {
   user: {
     id: string;
@@ -114,5 +123,21 @@ export const authApi = {
   getMe: async (): Promise<AuthResponse['user']> => {
     const { data } = await apiClient.get<AuthResponse['user']>('/auth/me');
     return data;
+  },
+
+  forgotPassword: async (data: ForgotPasswordData): Promise<{ message: string }> => {
+    const { data: response } = await apiClient.post<{ message: string }>(
+      '/auth/forgot-password',
+      data
+    );
+    return response;
+  },
+
+  resetPassword: async (data: ResetPasswordData): Promise<{ message: string }> => {
+    const { data: response } = await apiClient.post<{ message: string }>(
+      '/auth/reset-password',
+      data
+    );
+    return response;
   },
 };

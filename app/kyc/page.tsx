@@ -411,8 +411,8 @@ export default function KycPage() {
                       const isActive = activeStep === step;
                       const isAccessible = isStepAccessible(step);
 
-                      return (
-                        <button
+                return (
+                  <button
                           key={step}
                           onClick={() => isAccessible && setActiveStep(step)}
                           disabled={!isAccessible}
@@ -424,16 +424,16 @@ export default function KycPage() {
                                 : isAccessible
                                   ? 'hover:bg-muted'
                                   : 'cursor-not-allowed opacity-50'
-                          }`}
-                        >
-                          <div
+                    }`}
+                  >
+                    <div
                             className={`flex h-8 w-8 items-center justify-center rounded-full ${
                               isCompleted ? 'bg-green-500 text-white' : 'bg-muted'
-                            }`}
-                          >
-                            {isCompleted ? (
-                              <CheckCircle className="h-5 w-5" />
-                            ) : (
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <CheckCircle className="h-5 w-5" />
+                      ) : (
                               STEP_ICONS[step] || <Circle className="h-5 w-5" />
                             )}
                           </div>
@@ -986,21 +986,21 @@ export default function KycPage() {
                       Save & Complete
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            </div>
+          </CardContent>
+        </Card>
             )}
 
             {/* Completed */}
             {activeStep === KYC_STEPS.COMPLETED && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
                     <CheckCircle className="h-6 w-6 text-green-500" />
                     Profile Complete!
-                  </CardTitle>
+            </CardTitle>
                   <CardDescription>Your business profile is ready for review</CardDescription>
-                </CardHeader>
+          </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
                     Thank you for completing your profile. Our team will review your information and
@@ -1017,7 +1017,7 @@ export default function KycPage() {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+        </Card>
             )}
           </div>
         </div>

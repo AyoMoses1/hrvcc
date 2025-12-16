@@ -81,7 +81,10 @@ export function UserNav() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/profile/${user.id}`} className="flex items-center">
+              <Link
+                href={`/profile/${(user as any).slug || user.id}`}
+                className="flex items-center"
+              >
                 <User className="mr-2 h-4 w-4" />
                 My Profile
               </Link>
@@ -134,7 +137,7 @@ export function UserNav() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={`/profile/${user.id}`} className="flex items-center">
+          <Link href={`/profile/${(user as any).slug || user.id}`} className="flex items-center">
             <User className="mr-2 h-4 w-4" />
             Profile
           </Link>

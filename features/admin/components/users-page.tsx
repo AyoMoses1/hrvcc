@@ -220,7 +220,9 @@ export function UsersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/profile/${user.id}`}>View Profile</Link>
+                              <Link href={`/profile/${(user as any).slug || user.id}`}>
+                                View Profile
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <ShieldCheck className="mr-2 h-4 w-4" />

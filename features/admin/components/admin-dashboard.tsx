@@ -1,40 +1,92 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, Briefcase, AlertCircle, TrendingUp, Eye } from 'lucide-react';
-import { adminStats } from '@/lib/data/mock-data';
+import { Users, Building2, Briefcase, AlertCircle, TrendingUp, Loader2 } from 'lucide-react';
+import { adminApi, AdminStats } from '@/lib/api/admin';
+import { formatRelativeTime } from '@/lib/utils';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export function AdminDashboard() {
-  const stats = [
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const data = await adminApi.getStats();
+        setStats(data);
+        setError(null);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load statistics');
+        console.error('Failed to fetch admin stats:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4 text-muted-foreground">Loading dashboard statistics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="container py-8">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-destructive">{error || 'Failed to load statistics'}</p>
+            <Button className="mt-4" onClick={() => window.location.reload()} variant="outline">
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const statCards = [
     {
       label: 'Total Users',
-      value: adminStats.totalUsers.toLocaleString(),
+      value: stats.totalUsers.toLocaleString(),
       icon: Users,
-      change: '+' + adminStats.newUsersThisMonth,
+      change: '+' + stats.newUsersThisMonth,
     },
     {
-      label: 'Professionals',
-      value: adminStats.totalProfessionals.toLocaleString(),
-      icon: Users,
+      label: 'Organizations',
+      value: stats.totalOrganizations.toLocaleString(),
+      icon: Building2,
     },
     {
       label: 'Businesses',
-      value: adminStats.totalBusinesses.toLocaleString(),
+      value: stats.totalBusinesses.toLocaleString(),
       icon: Building2,
     },
     {
       label: 'Active Jobs',
-      value: adminStats.totalJobs.toLocaleString(),
+      value: stats.totalJobs.toLocaleString(),
       icon: Briefcase,
     },
     {
       label: 'Active Users',
-      value: adminStats.activeUsers.toLocaleString(),
+      value: stats.activeUsers.toLocaleString(),
       icon: TrendingUp,
     },
     {
       label: 'Revenue',
-      value: '$' + (adminStats.revenue || 0).toLocaleString(),
+      value: '$' + (stats.revenue || 0).toLocaleString(),
       icon: TrendingUp,
     },
   ];
@@ -48,7 +100,7 @@ export function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat) => {
+        {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.label}>
@@ -77,18 +129,24 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {['John Doe', 'Jane Smith', 'Tech Innovations', 'Green Energy Co.'].map(
-                (name, i) => (
-                  <div key={i} className="flex items-center justify-between">
+              {stats.recentRegistrations.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No recent registrations</p>
+              ) : (
+                stats.recentRegistrations.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{name}</p>
+                      <p className="font-medium">{user.name || user.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        {i === 0 ? 'Just now' : `${i * 2} hours ago`}
+                        {formatRelativeTime(user.createdAt)}
                       </p>
                     </div>
-                    <span className="text-xs text-primary">View</span>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/admin/users`} className="text-xs text-primary">
+                        View
+                      </Link>
+                    </Button>
                   </div>
-                )
+                ))
               )}
             </div>
           </CardContent>
@@ -100,15 +158,23 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {['Solar Tech Ltd', 'AgriCorp', 'Dr. Amara Johnson'].map((name, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-500" />
-                    <p className="font-medium">{name}</p>
+              {stats.pendingVerifications.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No pending verifications</p>
+              ) : (
+                stats.pendingVerifications.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+                      <p className="font-medium">{user.name || user.email}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/admin/users`} className="text-xs text-primary">
+                        Review
+                      </Link>
+                    </Button>
                   </div>
-                  <span className="text-xs text-primary">Review</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -116,4 +182,3 @@ export function AdminDashboard() {
     </div>
   );
 }
-

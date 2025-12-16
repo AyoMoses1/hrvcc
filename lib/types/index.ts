@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  slug?: string; // URL-friendly identifier
   name: string;
   title: string;
   category: 'Business' | 'Organization';

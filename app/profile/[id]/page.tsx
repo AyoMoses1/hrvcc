@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function ProfilePage({ params }: { params: { id: string } }) {
+  // Support both slug and UUID for backward compatibility
   const { data: business, isLoading, error } = useBusiness(params.id);
 
   if (isLoading) {

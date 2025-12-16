@@ -67,6 +67,7 @@ export interface UpdateBusinessDto {
 
 export interface Business {
   id: string;
+  slug?: string; // URL-friendly identifier
   businessName: string;
   category: 'Business' | 'Organization';
   category2?: string;

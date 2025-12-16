@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import { ContactPage } from '@/features/contact/components/contact-page';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
@@ -7,7 +9,13 @@ export const metadata: Metadata = {
 };
 
 export default function Contact() {
-  return <ContactPage />;
+  return (
+    <>
+      <Header />
+      <main className="flex-1">
+        <ContactPage />
+      </main>
+      <Footer />
+    </>
+  );
 }
-
-
