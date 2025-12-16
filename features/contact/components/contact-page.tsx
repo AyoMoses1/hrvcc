@@ -44,10 +44,10 @@ export function ContactPage() {
   };
 
   return (
-    <div className="container py-12">
-      <div className="mb-12 text-center">
-        <h1 className="mb-4 text-4xl font-bold">Contact HRVCC</h1>
-        <p className="text-lg text-muted-foreground">
+    <div className="container py-8">
+      <div className="mb-8">
+        <h1 className="mb-2 text-3xl font-bold">Contact HRVCC</h1>
+        <p className="text-muted-foreground">
           Get in touch with the Houston Regional Veterans Chamber of Commerce
         </p>
       </div>
@@ -66,7 +66,7 @@ export function ContactPage() {
                   <Mail className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Email</h3>
+                  <h3 className="text-sm font-medium">Email</h3>
                   <p className="text-sm text-muted-foreground">
                     <a
                       href="mailto:VetBiz@HouVeteransChamber.org"
@@ -83,7 +83,7 @@ export function ContactPage() {
                   <Phone className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Phone</h3>
+                  <h3 className="text-sm font-medium">Phone</h3>
                   <p className="text-sm text-muted-foreground">
                     <a
                       href="tel:8322058872"
@@ -100,7 +100,7 @@ export function ContactPage() {
                   <MapPin className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Address</h3>
+                  <h3 className="text-sm font-medium">Address</h3>
                   <p className="text-sm text-muted-foreground">
                     1201 Fannin Street, Suite 262<br />
                     Houston, TX 77002

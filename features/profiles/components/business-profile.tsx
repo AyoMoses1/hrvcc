@@ -29,12 +29,29 @@ import {
 } from 'lucide-react';
 import { Business } from '@/lib/api/businesses';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface BusinessProfileProps {
   business: Business;
 }
 
 export function BusinessProfile({ business }: BusinessProfileProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // Handle contact button click - require login
+  const handleContactClick = () => {
+    if (!user) {
+      toast.error('Please sign in to contact this business');
+      router.push('/auth/signin');
+      return;
+    }
+    // TODO: Open contact form/modal
+    toast.info('Contact functionality coming soon');
+  };
+
   // Format website URL
   const formatWebsiteUrl = (url?: string) => {
     if (!url) return null;
@@ -183,7 +200,7 @@ export function BusinessProfile({ business }: BusinessProfileProps) {
 
             {/* Action Buttons */}
             <div className="flex gap-3 pb-4">
-              <Button size="lg" className="shadow-md">
+              <Button size="lg" className="shadow-md" onClick={handleContactClick}>
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Contact
               </Button>
@@ -602,7 +619,7 @@ export function BusinessProfile({ business }: BusinessProfileProps) {
 
                 {/* CTA Buttons */}
                 <div className="space-y-2">
-                  <Button className="w-full" size="lg">
+                  <Button className="w-full" size="lg" onClick={handleContactClick}>
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Send Message
                   </Button>

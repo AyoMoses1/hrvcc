@@ -18,12 +18,29 @@ import {
 } from 'lucide-react';
 import { User } from '@/lib/types';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface PublicProfileProps {
   user: User;
 }
 
 export function PublicProfile({ user }: PublicProfileProps) {
+  const { user: currentUser } = useAuth();
+  const router = useRouter();
+
+  // Handle message button click - require login
+  const handleMessageClick = () => {
+    if (!currentUser) {
+      toast.error('Please sign in to contact this user');
+      router.push('/auth/signin');
+      return;
+    }
+    // TODO: Open message form/modal
+    toast.info('Message functionality coming soon');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-muted/20 to-background">
       <div className="relative">
@@ -116,11 +133,11 @@ export function PublicProfile({ user }: PublicProfileProps) {
             </div>
 
             <div className="flex gap-2 pb-2">
-              <Button size="lg" className="shadow-md">
+              <Button size="lg" className="shadow-md" onClick={handleMessageClick}>
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Message
               </Button>
-              <Button size="lg" variant="outline" className="shadow-md">
+              <Button size="lg" variant="outline" className="shadow-md" onClick={handleMessageClick}>
                 Connect
               </Button>
             </div>
