@@ -1,7 +1,7 @@
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'HRVCC Member Directory';
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-export const USER_CATEGORIES = ['Professional', 'Business', 'Organization'] as const;
+export const USER_CATEGORIES = ['Business', 'Organization', 'Staff'] as const;
 export type UserCategory = (typeof USER_CATEGORIES)[number];
 
 export const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Remote'] as const;

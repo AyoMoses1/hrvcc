@@ -29,7 +29,7 @@ export function UserNav() {
   if (!user) {
     return (
       <div className="flex items-center gap-2">
-        <Button variant="ghost" asChild>
+        <Button variant="ghost" asChild className="hover:bg-accent hover:text-accent-foreground">
           <Link href="/auth/signin">Sign In</Link>
         </Button>
         <Button asChild>

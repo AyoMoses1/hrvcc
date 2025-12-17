@@ -18,7 +18,7 @@ export interface PaginationParams {
 export interface UpdateUserData {
   name?: string;
   title?: string;
-  category?: 'Professional' | 'Business' | 'Organization';
+  category?: 'Business' | 'Organization' | 'Staff';
   location?: string;
   country?: string;
   bio?: string;
@@ -53,4 +53,3 @@ export const usersApi = {
     return data;
   },
 };
-

@@ -84,7 +84,7 @@ export interface Job {
 
 export interface AdminStats {
   totalUsers: number;
-  totalProfessionals: number;
+  totalStaff: number;
   totalBusinesses: number;
   totalOrganizations: number;
   totalJobs: number;

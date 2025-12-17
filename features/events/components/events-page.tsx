@@ -131,14 +131,6 @@ export function EventsPage() {
 
   return (
     <div className="container py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild className="mb-4">
-          <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Link>
-        </Button>
-      </div>
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="mb-2 text-3xl font-bold">Events Calendar</h1>

@@ -242,9 +242,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
               <CardTitle>Messages</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Connect and communicate with other professionals.
-              </p>
+              <p className="text-muted-foreground">Connect and communicate with other members.</p>
               <Button className="mt-4" asChild>
                 <Link href="/messages">View Messages</Link>
               </Button>

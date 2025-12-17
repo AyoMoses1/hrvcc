@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react';
+import { contactApi } from '@/lib/api/contact';
+import { toast } from 'sonner';
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,23 +19,33 @@ export function ContactPage() {
     message: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Contact form submitted:', formData);
-    setIsSubmitted(true);
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-      });
-    }, 3000);
+    setIsLoading(true);
+
+    try {
+      await contactApi.sendMessage(formData);
+      toast.success('Message sent successfully! We will get back to you soon.');
+      setIsSubmitted(true);
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+        });
+      }, 3000);
+    } catch (error: any) {
+      console.error('Contact form error:', error);
+      toast.error(error?.response?.data?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -70,7 +82,7 @@ export function ContactPage() {
                   <p className="text-sm text-muted-foreground">
                     <a
                       href="mailto:VetBiz@HouVeteransChamber.org"
-                      className="hover:text-primary transition-colors"
+                      className="transition-colors hover:text-primary"
                     >
                       VetBiz@HouVeteransChamber.org
                     </a>
@@ -85,10 +97,7 @@ export function ContactPage() {
                 <div>
                   <h3 className="text-sm font-medium">Phone</h3>
                   <p className="text-sm text-muted-foreground">
-                    <a
-                      href="tel:8322058872"
-                      className="hover:text-primary transition-colors"
-                    >
+                    <a href="tel:8322058872" className="transition-colors hover:text-primary">
                       832.205.8872
                     </a>
                   </p>
@@ -102,7 +111,8 @@ export function ContactPage() {
                 <div>
                   <h3 className="text-sm font-medium">Address</h3>
                   <p className="text-sm text-muted-foreground">
-                    1201 Fannin Street, Suite 262<br />
+                    1201 Fannin Street, Suite 262
+                    <br />
                     Houston, TX 77002
                   </p>
                 </div>
@@ -198,9 +208,18 @@ export function ContactPage() {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
+                  <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Message
+                      </>
+                    )}
                   </Button>
                 </form>
               )}
@@ -211,5 +230,3 @@ export function ContactPage() {
     </div>
   );
 }
-
-

@@ -1,8 +1,8 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 
-// Use Next.js API routes instead of external API
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+// Backend API URL - defaults to localhost:4000/api in development
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,

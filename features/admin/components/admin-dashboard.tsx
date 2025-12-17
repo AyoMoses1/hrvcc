@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, Briefcase, AlertCircle, TrendingUp, Loader2 } from 'lucide-react';
+import { Users, Building2, Briefcase, AlertCircle, TrendingUp, Loader2, Ban } from 'lucide-react';
 import { adminApi, AdminStats } from '@/lib/api/admin';
 import { formatRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -18,6 +18,8 @@ export function AdminDashboard() {
       try {
         setIsLoading(true);
         const data = await adminApi.getStats();
+        console.log('Admin stats received:', data);
+        console.log('Suspended users:', data.suspendedUsers);
         setStats(data);
         setError(null);
       } catch (err: any) {
@@ -75,6 +77,11 @@ export function AdminDashboard() {
       icon: Building2,
     },
     {
+      label: 'Staff',
+      value: (stats.totalStaff || 0).toLocaleString(),
+      icon: Users,
+    },
+    {
       label: 'Active Jobs',
       value: stats.totalJobs.toLocaleString(),
       icon: Briefcase,
@@ -83,6 +90,11 @@ export function AdminDashboard() {
       label: 'Active Users',
       value: stats.activeUsers.toLocaleString(),
       icon: TrendingUp,
+    },
+    {
+      label: 'Suspended Users',
+      value: (stats.suspendedUsers?.length || 0).toLocaleString(),
+      icon: Ban,
     },
     {
       label: 'Revenue',
@@ -122,7 +134,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Recent User Registrations</CardTitle>
@@ -170,6 +182,48 @@ export function AdminDashboard() {
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/admin/users`} className="text-xs text-primary">
                         Review
+                      </Link>
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+                Suspended Users
+              </CardTitle>
+              {stats.suspendedUsers && stats.suspendedUsers.length > 0 && (
+                <span className="rounded-full bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive">
+                  {stats.suspendedUsers.length}
+                </span>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {!stats.suspendedUsers || stats.suspendedUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No suspended users</p>
+              ) : (
+                stats.suspendedUsers.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                      <div>
+                        <p className="font-medium">{user.name || user.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.category} • {formatRelativeTime(user.updatedAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/admin/users`} className="text-xs text-primary">
+                        View
                       </Link>
                     </Button>
                   </div>

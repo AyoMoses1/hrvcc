@@ -59,15 +59,15 @@ export function AnalyticsPage() {
     );
   }
 
-  const professionals = users.filter((u: any) => u.category === 'Professional').length;
   const businesses = users.filter((u: any) => u.category === 'Business').length;
   const organizations = users.filter((u: any) => u.category === 'Organization').length;
+  const staff = users.filter((u: any) => u.category === 'Staff').length;
   const verified = users.filter((u: any) => u.verified).length;
 
   const categoryData = [
-    { name: 'Professionals', value: professionals, color: COLORS[0] },
-    { name: 'Businesses', value: businesses, color: COLORS[1] },
-    { name: 'Organizations', value: organizations, color: COLORS[2] },
+    { name: 'Businesses', value: businesses, color: COLORS[0] },
+    { name: 'Organizations', value: organizations, color: COLORS[1] },
+    { name: 'Staff', value: staff, color: COLORS[2] },
   ];
 
   const monthlyRegistrations = Array.from({ length: 12 }, (_, i) => {
@@ -110,17 +110,17 @@ export function AnalyticsPage() {
 
   const stats = [
     {
-      label: 'Total Members',
+      label: 'Total Users',
       value: users.length.toLocaleString(),
       icon: Users,
       change: '+12%',
       trend: 'up',
     },
     {
-      label: 'Verified Members',
-      value: verified.toLocaleString(),
+      label: 'Active Organizations',
+      value: organizations.toLocaleString(),
       icon: CheckCircle,
-      change: `${Math.round((verified / users.length) * 100) || 0}%`,
+      change: `${Math.round((organizations / users.length) * 100) || 0}%`,
       trend: 'up',
     },
     {

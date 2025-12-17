@@ -5,6 +5,7 @@ export interface AdminStats {
   newUsersThisMonth: number;
   totalBusinesses: number;
   totalOrganizations: number;
+  totalStaff?: number;
   totalJobs: number;
   activeUsers: number;
   revenue: number;
@@ -21,6 +22,14 @@ export interface AdminStats {
     email: string;
     kycStatus: string;
     createdAt: string;
+  }>;
+  suspendedUsers?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    category: string;
+    suspended: boolean;
+    updatedAt: string;
   }>;
 }
 

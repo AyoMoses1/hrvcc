@@ -74,8 +74,14 @@ export const mockJobs: Job[] = [
     location: 'Houston, TX',
     type: 'Full-time',
     salary: '$60,000 - $80,000',
-    description: 'We are looking for an experienced web developer to join our growing team. Work on cutting-edge web solutions and help businesses boost their digital presence.',
-    requirements: ['5+ years web development experience', 'React/Next.js', 'TypeScript', 'eCommerce platforms'],
+    description:
+      'We are looking for an experienced web developer to join our growing team. Work on cutting-edge web solutions and help businesses boost their digital presence.',
+    requirements: [
+      '5+ years web development experience',
+      'React/Next.js',
+      'TypeScript',
+      'eCommerce platforms',
+    ],
     postedDate: '2024-01-10',
   },
   {
@@ -85,8 +91,14 @@ export const mockJobs: Job[] = [
     location: 'The Woodlands, TX',
     type: 'Full-time',
     salary: '$70,000 - $90,000',
-    description: 'Lead strategic consulting projects and help businesses achieve their goals through innovative solutions and process improvement.',
-    requirements: ['Business Strategy', 'Process Improvement', 'Organizational Change Management', 'Technology Implementation'],
+    description:
+      'Lead strategic consulting projects and help businesses achieve their goals through innovative solutions and process improvement.',
+    requirements: [
+      'Business Strategy',
+      'Process Improvement',
+      'Organizational Change Management',
+      'Technology Implementation',
+    ],
     postedDate: '2024-01-08',
   },
 ];
@@ -121,7 +133,7 @@ export const states = [
 
 export const adminStats: AdminStats = {
   totalUsers: 12456,
-  totalProfessionals: 8234,
+  totalStaff: 12,
   totalBusinesses: 2891,
   totalOrganizations: 1331,
   totalJobs: 456,
@@ -134,7 +146,8 @@ export const mockEvents: Event[] = [
   {
     id: '1',
     title: 'Monthly Networking Mixer',
-    description: 'Join us for our monthly networking event with local businesses. Connect with fellow HRVCC members and expand your professional network.',
+    description:
+      'Join us for our monthly networking event with local businesses. Connect with fellow HRVCC members and expand your professional network.',
     date: new Date('2024-12-15'),
     startTime: '18:00',
     endTime: '20:00',
@@ -146,7 +159,8 @@ export const mockEvents: Event[] = [
   {
     id: '2',
     title: 'Veteran Business Growth Academy',
-    description: 'Learn strategies for growing your business in 2024. This workshop covers marketing, finance, and business development for veteran-owned businesses.',
+    description:
+      'Learn strategies for growing your business in 2024. This workshop covers marketing, finance, and business development for veteran-owned businesses.',
     date: new Date('2024-12-10'),
     startTime: '10:00',
     endTime: '14:00',
@@ -158,7 +172,8 @@ export const mockEvents: Event[] = [
   {
     id: '3',
     title: 'Annual Chamber Conference',
-    description: 'Our annual conference featuring keynote speakers and breakout sessions. Join us for a day of learning, networking, and celebrating veteran business success.',
+    description:
+      'Our annual conference featuring keynote speakers and breakout sessions. Join us for a day of learning, networking, and celebrating veteran business success.',
     date: new Date('2024-12-20'),
     startTime: '09:00',
     endTime: '17:00',
@@ -170,7 +185,8 @@ export const mockEvents: Event[] = [
   {
     id: '4',
     title: 'Veteran Business EXPO',
-    description: 'Showcase your business at our quarterly expo. Connect with potential clients, partners, and investors.',
+    description:
+      'Showcase your business at our quarterly expo. Connect with potential clients, partners, and investors.',
     date: new Date('2024-12-05'),
     startTime: '11:00',
     endTime: '16:00',
@@ -182,7 +198,8 @@ export const mockEvents: Event[] = [
   {
     id: '5',
     title: 'C-Suite Networking Roundtable',
-    description: 'Exclusive networking opportunity for executive-level members. Discuss business challenges and opportunities in an intimate setting.',
+    description:
+      'Exclusive networking opportunity for executive-level members. Discuss business challenges and opportunities in an intimate setting.',
     date: new Date('2024-12-12'),
     startTime: '17:30',
     endTime: '19:30',
@@ -194,7 +211,8 @@ export const mockEvents: Event[] = [
   {
     id: '6',
     title: 'Holiday Social Gathering',
-    description: 'Join us for our annual holiday celebration. Food, drinks, and great company as we celebrate the year together.',
+    description:
+      'Join us for our annual holiday celebration. Food, drinks, and great company as we celebrate the year together.',
     date: new Date('2024-12-18'),
     startTime: '18:00',
     endTime: '21:00',
@@ -206,7 +224,8 @@ export const mockEvents: Event[] = [
   {
     id: '7',
     title: 'Procurement Workshop',
-    description: 'Learn how to navigate government and corporate procurement opportunities. Essential for businesses looking to expand their contracts.',
+    description:
+      'Learn how to navigate government and corporate procurement opportunities. Essential for businesses looking to expand their contracts.',
     date: new Date('2024-12-08'),
     startTime: '13:00',
     endTime: '16:00',
@@ -245,7 +264,8 @@ export const mockMemberPlans: MemberPlan[] = [
       'Customizable web portal presence',
       'One (1) Representatives for the Company',
     ],
-    description: 'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
+    description:
+      'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
   },
   {
     id: '2',
@@ -264,7 +284,8 @@ export const mockMemberPlans: MemberPlan[] = [
       'Professional Head-shot and video commercial (up to 90 seconds) A $1400 value',
       'Upgraded Membership listing in Texas Veterans Business Magazine',
     ],
-    description: 'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
+    description:
+      'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
   },
   {
     id: '3',
@@ -286,7 +307,8 @@ export const mockMemberPlans: MemberPlan[] = [
       'Special Networking Opportunities',
       'Two (2) Representatives for the Company',
     ],
-    description: 'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
+    description:
+      'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
   },
   {
     id: '4',
@@ -315,7 +337,8 @@ export const mockMemberPlans: MemberPlan[] = [
       'Customizable web portal presence',
       'One (1) Representatives for the Company',
     ],
-    description: 'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
+    description:
+      'Military service verification (Form DD-214) or Official Veteran Business Designation is required',
   },
   {
     id: '5',
@@ -347,4 +370,3 @@ export const mockMemberPlans: MemberPlan[] = [
     description: 'First Responder credentials required for verification',
   },
 ];
-

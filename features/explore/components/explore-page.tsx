@@ -36,7 +36,8 @@ export function ExplorePage() {
 
   const filteredBusinesses = useMemo(() => {
     // Start with verified businesses (already filtered by API)
-    let filtered = allBusinesses;
+    // Also filter out suspended businesses on the frontend as an extra safeguard
+    let filtered = allBusinesses.filter((business) => !business.suspended);
 
     if (debouncedSearch) {
       filtered = filtered.filter(
