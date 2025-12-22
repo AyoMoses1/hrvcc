@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { getUserDisplayName, getUserInitials } from '@/lib/utils/user';
+import Image from 'next/image';
 
 // Helper type for normalized service
 interface ServiceData {
@@ -92,6 +93,7 @@ export default function ServiceDetailsPage({
               <Card className="overflow-hidden border-0 shadow-lg">
                 {service.image ? (
                   <div className="relative h-96 w-full overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={service.image}
                       alt={service.name}
@@ -156,6 +158,7 @@ export default function ServiceDetailsPage({
                   <div className="mb-6 flex items-center gap-3">
                     {user.image ? (
                       <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-background">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={user.image}
                           alt={getUserDisplayName(user)}

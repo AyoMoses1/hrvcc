@@ -1004,7 +1004,7 @@ export default function KycPage() {
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
                     Thank you for completing your profile. Our team will review your information and
-                    verify your business. You'll be notified once the review is complete.
+                    verify your business. You&apos;ll be notified once the review is complete.
                   </p>
 
                   <div className="flex gap-4 pt-4">

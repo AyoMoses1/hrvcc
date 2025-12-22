@@ -40,7 +40,7 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
             </div>
             <h1 className="mb-2 text-2xl font-bold">Business Not Found</h1>
             <p className="mb-6 text-muted-foreground">
-              The business profile you're looking for doesn't exist or may have been removed.
+              The business profile you&apos;re looking for doesn&apos;t exist or may have been removed.
             </p>
             <div className="flex justify-center gap-3">
               <Button asChild>
