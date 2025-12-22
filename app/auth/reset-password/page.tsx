@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -115,10 +116,14 @@ export default function ResetPasswordPage() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <Link href="/" className="mb-8 flex items-center space-x-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-          <span className="text-sm font-bold text-primary-foreground">HRVCC</span>
-        </div>
-        <span className="text-xl font-bold">HRVCC Member Directory</span>
+        <Image
+          src="/logos/img-639---logo-1.png"
+          alt="HRVCC Logo"
+          width={280}
+          height={60}
+          className="h-14 w-auto object-contain"
+          priority
+        />
       </Link>
 
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .filter((file) => file instanceof File && file.size > 0) as File[];
 
     // Validate required fields
-    if (!data.email || !data.password || !data.name || !data.category) {
+    if (!data.email || !data.password || !data.firstName || !data.lastName || !data.category) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -62,29 +62,11 @@ export async function POST(request: NextRequest) {
       const userId = randomUUID();
       const userInsertQuery = `
         INSERT INTO users (
-          id, email, password, username, name, role, category,
-          business_name, category2,
-          title, first_name, middle_name, last_name, suffix, position,
-          office_address, address_line2, city, state, zip, county,
-          phone, secondary_phone, fax, website_url,
-          gender, veteran_owned_business, branches, branch_of_service,
-          referred_by, other,
-          billing_email,
-          billing_first_name, billing_last_name, billing_company,
-          billing_address, billing_city, billing_state, billing_zip, billing_country,
+          id, email, password, username, first_name, last_name, role, category,
           image, plan_id
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7,
-          $8, $9,
-          $10, $11, $12, $13, $14, $15,
-          $16, $17, $18, $19, $20, $21,
-          $22, $23, $24, $25,
-          $26, $27, $28, $29,
-          $30, $31,
-          $32,
-          $33, $34, $35,
-          $36, $37, $38, $39, $40,
-          $41, $42
+          $1, $2, $3, $4, $5, $6, $7, $8,
+          $9, $10
         ) RETURNING *
       `;
 
@@ -93,45 +75,137 @@ export async function POST(request: NextRequest) {
         data.email,
         hashedPassword,
         data.username || null,
-        data.name,
+        data.firstName,
+        data.lastName,
         'USER',
         data.category.toUpperCase(),
-        data.businessName || null,
-        data.category2 || null,
-        data.title || null,
-        data.firstName || null,
-        data.middleName || null,
-        data.lastName || null,
-        data.suffix || null,
-        data.position || null,
-        data.officeAddress || null,
-        data.addressLine2 || null,
-        data.city || null,
-        data.state || null,
-        data.zip || null,
-        data.county || null,
-        data.phone || null,
-        data.secondaryPhone || null,
-        data.fax || null,
-        data.websiteUrl || null,
-        data.gender ? data.gender.toUpperCase().replace(' ', '_') : null,
-        data.veteranOwnedBusiness || false,
-        data.branches || [],
-        data.branchOfService || null,
-        data.referredBy || null,
-        data.other || null,
-        data.billingEmail || null,
-        data.billingFirstName || null,
-        data.billingLastName || null,
-        data.billingCompany || null,
-        data.billingAddress || null,
-        data.billingCity || null,
-        data.billingState || null,
-        data.billingZip || null,
-        data.billingCountry || null,
         profilePhotoUrl,
         data.planId || null,
       ]);
+
+      // Insert business profile if business data exists
+      if (
+        data.businessName ||
+        data.category2 ||
+        data.title ||
+        data.bio ||
+        data.skills ||
+        data.services
+      ) {
+        const businessProfileId = randomUUID();
+        const businessProfileQuery = `
+          INSERT INTO business_profiles (
+            id, user_id, business_name, category_2, position,
+            website_url, phone, secondary_phone, fax, description,
+            veteran_owned_business, branch_of_service, branches,
+            referred_by, other, title, location, country, bio,
+            banner, rating, reviews, skills, services,
+            website, linkedin, twitter
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+            $11, $12, $13, $14, $15, $16, $17, $18, $19,
+            $20, $21, $22, $23, $24, $25, $26, $27
+          ) RETURNING *
+        `;
+
+        await client.query(businessProfileQuery, [
+          businessProfileId,
+          userId,
+          data.businessName || `${data.firstName} ${data.lastName}`.trim(),
+          data.category2 || null,
+          data.position || null,
+          data.websiteUrl || null,
+          data.phone || null,
+          data.secondaryPhone || null,
+          data.fax || null,
+          data.description || null,
+          data.veteranOwnedBusiness || false,
+          data.branchOfService || null,
+          data.branches || null,
+          data.referredBy || null,
+          data.other || null,
+          data.title || null,
+          data.location || null,
+          data.country || null,
+          data.bio || null,
+          data.banner || null,
+          null, // rating
+          0, // reviews
+          data.skills ? JSON.stringify(data.skills) : null,
+          data.services ? JSON.stringify(data.services) : null,
+          data.website || null,
+          data.linkedin || null,
+          data.twitter || null,
+        ]);
+      }
+
+      // Insert contact person if data exists
+      if (data.firstName || data.middleName || data.lastName) {
+        const contactPersonId = randomUUID();
+        const contactPersonQuery = `
+          INSERT INTO contact_persons (
+            id, user_id, title, first_name, middle_name, last_name, suffix, gender
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
+        `;
+
+        await client.query(contactPersonQuery, [
+          contactPersonId,
+          userId,
+          data.contactTitle || data.title || null,
+          data.contactFirstName || data.firstName || null,
+          data.middleName || null,
+          data.contactLastName || data.lastName || null,
+          data.suffix || null,
+          data.gender ? data.gender.toUpperCase().replace(' ', '_') : null,
+        ]);
+      }
+
+      // Insert office address if data exists
+      if (data.officeAddress || data.city || data.state) {
+        const officeAddressId = randomUUID();
+        const officeAddressQuery = `
+          INSERT INTO addresses (
+            id, user_id, type, address_line1, address_line2, city, state, zip_code, county, country
+          ) VALUES ($1, $2, 'office', $3, $4, $5, $6, $7, $8, $9) RETURNING *
+        `;
+
+        await client.query(officeAddressQuery, [
+          officeAddressId,
+          userId,
+          data.officeAddress || null,
+          data.addressLine2 || null,
+          data.city || null,
+          data.state || null,
+          data.zip || null,
+          data.county || null,
+          data.country || 'UNITED STATES',
+        ]);
+      }
+
+      // Insert billing info if data exists
+      if (data.billingEmail || data.billingFirstName || data.billingAddress) {
+        const billingInfoId = randomUUID();
+        const billingInfoQuery = `
+          INSERT INTO billing_info (
+            id, user_id, billing_email, first_name, last_name, company,
+            address_line1, city, state, zip_code, country
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
+        `;
+
+        await client.query(billingInfoQuery, [
+          billingInfoId,
+          userId,
+          data.billingEmail || null,
+          data.billingFirstName || null,
+          data.billingLastName || null,
+          data.billingCompany || null,
+          data.billingAddress || null,
+          data.billingCity || null,
+          data.billingState || null,
+          data.billingZip || null,
+          data.billingCountry || 'UNITED STATES',
+        ]);
+      }
 
       const user = userResult.rows[0];
 

@@ -3,9 +3,12 @@ import { User, Job, AdminStats, Event, MemberPlan } from '@/lib/types';
 export const mockUsers: User[] = [
   {
     id: '1',
+    firstName: 'Valon',
+    lastName: 'Consulting Group',
     name: 'Valon Consulting Group',
     title: 'Web Development & Digital Solutions',
     category: 'Business',
+    verified: true,
     location: 'Houston',
     country: 'Texas',
     address: '12600 BISSONNET ST A-4, 409',
@@ -27,7 +30,6 @@ export const mockUsers: User[] = [
       'Low Code/No Code Development',
       'Education IT Solution',
     ],
-    verified: true,
     rating: 4.9,
     reviews: 127,
     website: 'https://valonconsulting.com',
@@ -36,6 +38,8 @@ export const mockUsers: User[] = [
   },
   {
     id: '2',
+    firstName: 'Azuris',
+    lastName: 'Consulting',
     name: 'Azuris Consulting',
     title: 'Management Consulting Firm',
     category: 'Business',

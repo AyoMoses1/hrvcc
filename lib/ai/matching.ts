@@ -33,7 +33,7 @@ export function calculateMatches(currentUser: User, allUsers: User[]): MatchScor
 
     // Skills overlap
     if (currentUser.skills && user.skills) {
-      const commonSkills = currentUser.skills.filter((skill) =>
+      const commonSkills = currentUser.skills.filter((skill: string) =>
         user.skills?.includes(skill)
       );
       if (commonSkills.length > 0) {

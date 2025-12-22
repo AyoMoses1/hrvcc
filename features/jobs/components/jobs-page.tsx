@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,26 +22,52 @@ import {
   ChevronRight,
   SlidersHorizontal,
   X,
+  Loader2,
 } from 'lucide-react';
-import { mockJobs } from '@/lib/data/mock-data';
 import { formatRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
+import { jobsApi, Job } from '@/lib/api/jobs';
 
 export function JobsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const locations = [...new Set(mockJobs.map((job) => job.location))];
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setIsLoading(true);
+        const approvedJobs = await jobsApi.getAll(true);
+        setJobs(approvedJobs);
+      } catch (error) {
+        console.error('Failed to fetch jobs:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchJobs();
+  }, []);
 
-  const filteredJobs = mockJobs.filter((job) => {
+  const locations = [
+    ...new Set(jobs.map((job) => job.location).filter((loc): loc is string => !!loc)),
+  ];
+
+  const filteredJobs = jobs.filter((job) => {
+    const companyName =
+      job.user?.businessProfile?.businessName ||
+      `${job.user?.firstName} ${job.user?.lastName}`.trim() ||
+      '';
     const matchesSearch =
+      !searchQuery ||
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase());
+      companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesType = selectedType === 'all' || job.type === selectedType;
-    const matchesLocation = selectedLocation === 'all' || job.location === selectedLocation;
+    const matchesLocation =
+      selectedLocation === 'all' || !job.location || job.location === selectedLocation;
     return matchesSearch && matchesType && matchesLocation;
   });
 
@@ -188,7 +214,12 @@ export function JobsPage() {
         </div>
 
         {/* Job List */}
-        {filteredJobs.length > 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-4 text-muted-foreground">Loading jobs...</p>
+          </div>
+        ) : filteredJobs.length > 0 ? (
           <div className="space-y-3">
             {filteredJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`} className="block">
@@ -197,7 +228,11 @@ export function JobsPage() {
                     <div className="flex gap-4">
                       {/* Company Logo */}
                       <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-lg font-bold text-primary sm:flex">
-                        {job.company.charAt(0)}
+                        {(
+                          job.user?.businessProfile?.businessName ||
+                          `${job.user?.firstName} ${job.user?.lastName}`.trim() ||
+                          'Company'
+                        ).charAt(0)}
                       </div>
 
                       {/* Content */}
@@ -207,7 +242,9 @@ export function JobsPage() {
                             <h3 className="truncate font-semibold">{job.title}</h3>
                             <p className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Building2 className="h-3.5 w-3.5" />
-                              {job.company}
+                              {job.user?.businessProfile?.businessName ||
+                                `${job.user?.firstName} ${job.user?.lastName}`.trim() ||
+                                'Company'}
                             </p>
                           </div>
                           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
@@ -229,7 +266,7 @@ export function JobsPage() {
                           )}
                           <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5" />
-                            {formatRelativeTime(job.postedDate)}
+                            {formatRelativeTime(job.createdAt)}
                           </span>
                         </div>
 
@@ -238,15 +275,10 @@ export function JobsPage() {
                           <Badge variant="secondary" className="text-xs">
                             {job.type}
                           </Badge>
-                          {job.requirements.slice(0, 2).map((req) => (
-                            <Badge key={req} variant="outline" className="text-xs">
-                              {req}
+                          {job.requirements && (
+                            <Badge variant="outline" className="text-xs">
+                              Requirements
                             </Badge>
-                          ))}
-                          {job.requirements.length > 2 && (
-                            <span className="text-xs text-muted-foreground">
-                              +{job.requirements.length - 2} more
-                            </span>
                           )}
                         </div>
                       </div>
@@ -262,10 +294,12 @@ export function JobsPage() {
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
-              <Search className="mx-auto mb-4 h-10 w-10 text-muted-foreground/50" />
-              <h3 className="font-semibold">No jobs found</h3>
+              <Building2 className="mx-auto mb-4 h-10 w-10 text-muted-foreground/50" />
+              <h3 className="font-semibold">No jobs available</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Try adjusting your search or filters
+                {hasActiveFilters
+                  ? 'Try adjusting your search or filters'
+                  : 'Check back later for new job postings'}
               </p>
               {hasActiveFilters && (
                 <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>

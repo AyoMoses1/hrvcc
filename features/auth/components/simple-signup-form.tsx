@@ -24,7 +24,8 @@ import { authApi } from '@/lib/api/auth';
 
 const signupSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
     email: z.string().email('Please enter a valid email'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
@@ -65,7 +66,8 @@ export function SimpleSignupForm() {
       const response = await authApi.signup({
         email: data.email,
         password: data.password,
-        name: data.name,
+        firstName: data.firstName,
+        lastName: data.lastName,
         category: data.category,
         planId: planId || undefined,
       });
@@ -97,15 +99,31 @@ export function SimpleSignupForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <Input
-                id="name"
-                {...register('name')}
-                placeholder="Your full name"
-                disabled={isLoading}
-              />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name *</Label>
+                <Input
+                  id="firstName"
+                  {...register('firstName')}
+                  placeholder="John"
+                  disabled={isLoading}
+                />
+                {errors.firstName && (
+                  <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name *</Label>
+                <Input
+                  id="lastName"
+                  {...register('lastName')}
+                  placeholder="Doe"
+                  disabled={isLoading}
+                />
+                {errors.lastName && (
+                  <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -193,4 +211,3 @@ export function SimpleSignupForm() {
     </div>
   );
 }
-

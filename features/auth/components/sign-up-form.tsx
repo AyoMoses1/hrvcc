@@ -41,7 +41,8 @@ export function SignUpForm() {
       await registerUser({
         email: data.email,
         password: data.password,
-        name: data.name,
+        firstName: data.firstName,
+        lastName: data.lastName,
         category: data.category,
       });
       toast.success('Account created successfully!');
@@ -55,16 +56,31 @@ export function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
-        <Input
-          id="name"
-          type="text"
-          placeholder="John Doe"
-          {...register('name')}
-          disabled={isLoading}
-        />
-        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input
+            id="firstName"
+            type="text"
+            placeholder="John"
+            {...register('firstName')}
+            disabled={isLoading}
+          />
+          {errors.firstName && (
+            <p className="text-sm text-destructive">{errors.firstName.message}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input
+            id="lastName"
+            type="text"
+            placeholder="Doe"
+            {...register('lastName')}
+            disabled={isLoading}
+          />
+          {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -30,6 +30,27 @@ export function PublicProfile({ user }: PublicProfileProps) {
   const { user: currentUser } = useAuth();
   const router = useRouter();
 
+  // Helper to get display name
+  const getDisplayName = () => {
+    return user.name || `${user.firstName} ${user.lastName}`.trim();
+  };
+
+  // Get business profile data (with fallbacks for backward compatibility)
+  const bp = user.businessProfile;
+  const displayName = getDisplayName();
+  const banner = bp?.banner;
+  const title = bp?.title;
+  const location = bp?.location;
+  const country = bp?.country;
+  const rating = bp?.rating;
+  const reviews = bp?.reviews;
+  const bio = bp?.bio;
+  const skills = bp?.skills;
+  const services = bp?.services;
+  const website = bp?.website;
+  const linkedin = bp?.linkedin;
+  const twitter = bp?.twitter;
+
   // Handle message button click - require login
   const handleMessageClick = () => {
     if (!currentUser) {
@@ -45,10 +66,10 @@ export function PublicProfile({ user }: PublicProfileProps) {
     <div className="min-h-screen bg-gradient-to-b from-muted/20 to-background">
       <div className="relative">
         <div className="relative h-64 w-full overflow-hidden md:h-80 lg:h-96">
-          {user.banner ? (
+          {banner ? (
             <img
-              src={user.banner}
-              alt={`${user.name} banner`}
+              src={banner}
+              alt={`${displayName} banner`}
               className="h-full w-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -61,7 +82,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
           ) : null}
           <div
             className={`absolute inset-0 bg-gradient-to-br from-primary/40 via-primary/20 to-secondary/40 ${
-              user.banner ? 'hidden' : ''
+              banner ? 'hidden' : ''
             }`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
@@ -75,7 +96,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
                   <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-background bg-muted shadow-xl md:h-40 md:w-40">
                     <img
                       src={user.image}
-                      alt={user.name}
+                      alt={displayName}
                       className="h-full w-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -83,7 +104,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
                         if (target.parentElement) {
                           target.parentElement.innerHTML = `
                             <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-secondary text-4xl md:text-5xl font-bold text-primary-foreground">
-                              ${user.name.charAt(0).toUpperCase()}
+                              ${displayName.charAt(0).toUpperCase()}
                             </div>
                           `;
                         }
@@ -92,7 +113,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
                   </div>
                 ) : (
                   <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-background bg-gradient-to-br from-primary to-secondary text-4xl font-bold text-primary-foreground shadow-xl md:h-40 md:w-40 md:text-5xl">
-                    {user.name.charAt(0).toUpperCase()}
+                    {displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
                 {user.verified && (
@@ -103,7 +124,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
               </div>
               <div className="space-y-2 pb-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{user.name}</h1>
+                  <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{displayName}</h1>
                   {user.verified && (
                     <Badge variant="secondary" className="text-xs font-semibold">
                       <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -111,20 +132,24 @@ export function PublicProfile({ user }: PublicProfileProps) {
                     </Badge>
                   )}
                 </div>
-                <p className="text-lg font-medium text-muted-foreground md:text-xl">{user.title}</p>
+                {title && (
+                  <p className="text-lg font-medium text-muted-foreground md:text-xl">{title}</p>
+                )}
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    <span className="font-medium">
-                      {user.location}, {user.country}
-                    </span>
-                  </div>
-                  {user.rating && (
+                  {(location || country) && (
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4" />
+                      <span className="font-medium">
+                        {location && country ? `${location}, ${country}` : location || country}
+                      </span>
+                    </div>
+                  )}
+                  {rating && (
                     <div className="flex items-center gap-1.5">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       <span className="font-medium">
-                        {user.rating.toFixed(1)}{' '}
-                        <span className="text-muted-foreground">({user.reviews} reviews)</span>
+                        {rating.toFixed(1)}{' '}
+                        <span className="text-muted-foreground">({reviews || 0} reviews)</span>
                       </span>
                     </div>
                   )}
@@ -137,7 +162,12 @@ export function PublicProfile({ user }: PublicProfileProps) {
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Message
               </Button>
-              <Button size="lg" variant="outline" className="shadow-md" onClick={handleMessageClick}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="shadow-md"
+                onClick={handleMessageClick}
+              >
                 Connect
               </Button>
             </div>
@@ -155,12 +185,12 @@ export function PublicProfile({ user }: PublicProfileProps) {
                   <h2 className="text-2xl font-bold">About</h2>
                 </div>
                 <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-                  {user.bio}
+                  {bio || 'No bio available'}
                 </p>
               </CardContent>
             </Card>
 
-            {user.skills && user.skills.length > 0 && (
+            {skills && skills.length > 0 && (
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-6 md:p-8">
                   <div className="mb-6 flex items-center gap-2">
@@ -168,7 +198,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
                     <h2 className="text-2xl font-bold">Skills & Expertise</h2>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    {user.skills.map((skill) => (
+                    {skills.map((skill) => (
                       <Badge
                         key={skill}
                         variant="secondary"
@@ -182,7 +212,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
               </Card>
             )}
 
-            {user.services && user.services.length > 0 && (
+            {services && Array.isArray(services) && services.length > 0 && (
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-6 md:p-8">
                   <div className="mb-6 flex items-center gap-2">
@@ -190,7 +220,7 @@ export function PublicProfile({ user }: PublicProfileProps) {
                     <h2 className="text-2xl font-bold">Services Offered</h2>
                   </div>
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {user.services.map((service: any, index: number) => {
+                    {services.map((service: any, index: number) => {
                       const serviceData =
                         typeof service === 'string'
                           ? { id: `service-${index}`, name: service }
@@ -268,15 +298,15 @@ export function PublicProfile({ user }: PublicProfileProps) {
                     </Badge>
                   </div>
 
-                  {(user.website || user.linkedin || user.twitter) && (
+                  {(website || linkedin || twitter) && (
                     <div>
                       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         Connect
                       </p>
                       <div className="space-y-2">
-                        {user.website && (
+                        {website && (
                           <a
-                            href={user.website}
+                            href={website}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-muted"
@@ -287,9 +317,9 @@ export function PublicProfile({ user }: PublicProfileProps) {
                             </span>
                           </a>
                         )}
-                        {user.linkedin && (
+                        {linkedin && (
                           <a
-                            href={user.linkedin}
+                            href={linkedin}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-muted"
@@ -300,9 +330,9 @@ export function PublicProfile({ user }: PublicProfileProps) {
                             </span>
                           </a>
                         )}
-                        {user.twitter && (
+                        {twitter && (
                           <a
-                            href={user.twitter}
+                            href={twitter}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-muted"

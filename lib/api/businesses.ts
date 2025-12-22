@@ -17,6 +17,23 @@ export interface UpdateBusinessProfileDto {
   branches?: string[];
   referredBy?: string;
   other?: string;
+  // Business profile fields moved from users
+  title?: string;
+  location?: string;
+  country?: string;
+  bio?: string;
+  banner?: string;
+  skills?: string[];
+  services?: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    image?: string;
+    price?: string;
+  }>;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
 }
 
 export interface UpdateContactPersonDto {
@@ -40,23 +57,10 @@ export interface UpdateAddressDto {
 
 export interface UpdateBusinessDto {
   // User entity fields
-  name?: string;
-  title?: string;
+  firstName?: string;
+  lastName?: string;
   category?: 'Business' | 'Organization';
-  bio?: string;
-  skills?: string[];
-  services?: Array<{
-    id?: string;
-    name: string;
-    description?: string;
-    image?: string;
-    price?: string;
-  }>;
-  website?: string;
-  linkedin?: string;
-  twitter?: string;
   image?: string;
-  banner?: string;
 
   // Related entity fields
   businessProfile?: UpdateBusinessProfileDto;
@@ -68,11 +72,16 @@ export interface UpdateBusinessDto {
 export interface Business {
   id: string;
   slug?: string; // URL-friendly identifier
+  firstName?: string;
+  lastName?: string;
+  name?: string; // Computed full name for backward compatibility
   businessName: string;
   category: 'Business' | 'Organization';
   category2?: string;
   description?: string;
   verified: boolean;
+  kycVerified?: boolean; // Whether KYC is approved
+  kycStatus?: string; // KYC status: 'pending', 'in_progress', 'submitted', 'approved', 'rejected'
   suspended: boolean;
   email: string;
   phone?: string;
@@ -125,6 +134,8 @@ export interface Business {
   location?: string;
   country?: string;
   skills?: string[];
+  bio?: string; // Business bio/description
+  website?: string; // Website URL (alternative to websiteUrl)
   services?: Array<
     | string
     | {
@@ -165,6 +176,7 @@ export interface BusinessesResponse {
 }
 
 export interface BusinessFilters {
+  suspended?: boolean | 'all';
   page?: number;
   limit?: number;
   category?: 'Business' | 'Organization' | 'all';
@@ -179,6 +191,8 @@ export const businessesApi = {
     if (filters?.limit) params.limit = filters.limit;
     if (filters?.category && filters.category !== 'all') params.category = filters.category;
     if (filters?.verified !== undefined) params.verified = filters.verified;
+    if (filters?.suspended !== undefined && filters.suspended !== 'all')
+      params.suspended = filters.suspended;
     if (filters?.search) params.search = filters.search;
 
     const { data } = await apiClient.get<BusinessesResponse>('/businesses', { params });

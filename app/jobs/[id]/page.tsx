@@ -21,18 +21,37 @@ import {
   ExternalLink,
   CheckCircle,
 } from 'lucide-react';
-import { mockJobs } from '@/lib/data/mock-data';
+import { jobsApi, Job } from '@/lib/api/jobs';
 import { formatRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const job = mockJobs.find((j) => j.id === params.id);
+  const [job, setJob] = useState<Job | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const similarJobs = mockJobs
-    .filter((j) => j.id !== params.id && j.type === job?.type)
-    .slice(0, 3);
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        setIsLoading(true);
+        const jobData = await jobsApi.getById(params.id);
+        setJob(jobData);
+        setError(null);
+      } catch (err: any) {
+        console.error('Failed to fetch job:', err);
+        setError(err.response?.data?.message || 'Failed to load job');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchJob();
+    }
+  }, [params.id]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -40,12 +59,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     }
   }, [user, authLoading, router, params.id]);
 
-  if (authLoading) {
+  if (authLoading || isLoading) {
     return (
       <>
         <Header />
         <main className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="text-center">
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+            <p className="mt-4 text-lg text-muted-foreground">Loading job details...</p>
+          </div>
         </main>
         <Footer />
       </>
@@ -56,13 +78,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     return null;
   }
 
-  if (!job) {
+  if (error || !job) {
     return (
       <>
         <Header />
         <main className="container max-w-3xl py-16 text-center">
           <h1 className="text-2xl font-bold">Job not found</h1>
-          <p className="mt-2 text-muted-foreground">This job may have been removed.</p>
+          <p className="mt-2 text-muted-foreground">
+            {error || 'This job may have been removed.'}
+          </p>
           <Button className="mt-6" asChild>
             <Link href="/jobs">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -74,6 +98,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       </>
     );
   }
+
+  const companyName =
+    job.user?.businessProfile?.businessName ||
+    `${job.user?.firstName} ${job.user?.lastName}`.trim() ||
+    'Company';
+
+  const requirementsList = job.requirements
+    ? job.requirements.split('\n').filter((req) => req.trim())
+    : [];
 
   return (
     <>
@@ -96,13 +129,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   {/* Header */}
                   <div className="flex gap-4">
                     <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary">
-                      {job.company.charAt(0)}
+                      {companyName.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <h1 className="text-xl font-bold sm:text-2xl">{job.title}</h1>
                       <p className="mt-1 flex items-center gap-1 text-muted-foreground">
                         <Building2 className="h-4 w-4" />
-                        {job.company}
+                        {companyName}
                       </p>
                     </div>
                   </div>
@@ -110,10 +143,12 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   {/* Meta */}
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Badge variant="secondary">{job.type}</Badge>
-                    <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {job.location}
-                    </span>
+                    {job.location && (
+                      <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        {job.location}
+                      </span>
+                    )}
                     {job.salary && (
                       <span className="flex items-center gap-1 text-sm text-muted-foreground">
                         <DollarSign className="h-4 w-4" />
@@ -122,42 +157,36 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     )}
                     <span className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      {formatRelativeTime(job.postedDate)}
+                      {formatRelativeTime(job.createdAt)}
                     </span>
                   </div>
 
                   <Separator className="my-6" />
 
                   {/* Description */}
-                  <div>
-                    <h2 className="mb-3 font-semibold">About this role</h2>
-                    <p className="text-muted-foreground">{job.description}</p>
-                  </div>
+                  {job.description && (
+                    <div>
+                      <h2 className="mb-3 font-semibold">About this role</h2>
+                      <div className="text-muted-foreground whitespace-pre-wrap">
+                        {job.description}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Requirements */}
-                  <div className="mt-6">
-                    <h2 className="mb-3 font-semibold">Requirements</h2>
-                    <ul className="space-y-2">
-                      {job.requirements.map((req, index) => (
-                        <li key={index} className="flex items-start gap-2 text-muted-foreground">
-                          <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                          {req}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Skills */}
-                  <div className="mt-6">
-                    <h2 className="mb-3 font-semibold">Skills</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {job.requirements.map((req) => (
-                        <Badge key={req} variant="outline">
-                          {req}
-                        </Badge>
-                      ))}
+                  {requirementsList.length > 0 && (
+                    <div className="mt-6">
+                      <h2 className="mb-3 font-semibold">Requirements</h2>
+                      <ul className="space-y-2">
+                        {requirementsList.map((req, index) => (
+                          <li key={index} className="flex items-start gap-2 text-muted-foreground">
+                            <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                            {req.trim()}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -184,45 +213,26 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </Card>
 
               {/* Company Card */}
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 font-bold text-primary">
-                      {job.company.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-medium">{job.company}</p>
-                      <p className="text-xs text-muted-foreground">Veteran-Owned Business</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-4 w-full">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    View Company
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Similar Jobs */}
-              {similarJobs.length > 0 && (
+              {job.user && (
                 <Card>
                   <CardContent className="p-4">
-                    <h3 className="mb-3 font-medium">Similar Jobs</h3>
-                    <div className="space-y-3">
-                      {similarJobs.map((similarJob) => (
-                        <Link
-                          key={similarJob.id}
-                          href={`/jobs/${similarJob.id}`}
-                          className="block rounded-lg border p-3 transition-colors hover:bg-muted"
-                        >
-                          <p className="text-sm font-medium">{similarJob.title}</p>
-                          <p className="text-xs text-muted-foreground">{similarJob.company}</p>
-                          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            {similarJob.location}
-                          </div>
-                        </Link>
-                      ))}
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 font-bold text-primary">
+                        {companyName.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium">{companyName}</p>
+                        <p className="text-xs text-muted-foreground">Veteran-Owned Business</p>
+                      </div>
                     </div>
+                    {job.user.id && (
+                      <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                        <Link href={`/profile/${job.user.id}`}>
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          View Company
+                        </Link>
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               )}

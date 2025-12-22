@@ -44,9 +44,9 @@ export default function SignInPage() {
         <Image
           src="/logos/img-639---logo-1.png"
           alt="HRVCC Logo"
-          width={280}
-          height={60}
-          className="h-14 w-auto object-contain"
+          width={350}
+          height={75}
+          className="h-20 w-auto object-contain"
           priority
         />
       </Link>

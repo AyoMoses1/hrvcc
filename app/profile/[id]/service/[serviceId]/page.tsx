@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { getUserDisplayName, getUserInitials } from '@/lib/utils/user';
 
 // Helper type for normalized service
 interface ServiceData {
@@ -37,15 +38,18 @@ export default function ServiceDetailsPage({
   const { data: user, isLoading, error } = useUser(params.id);
   const { user: currentUser } = useAuth();
 
+  // Get services from user or businessProfile
+  const services = user?.services || user?.businessProfile?.services || [];
+
   // Find and normalize the service
-  const rawService = user?.services?.find((s, idx) => {
+  const rawService = services.find((s, idx) => {
     if (typeof s === 'string') {
       return `service-${idx}` === params.serviceId || idx.toString() === params.serviceId;
     }
     return s.id === params.serviceId;
   });
 
-  const serviceIndex = user?.services?.indexOf(rawService as any) ?? 0;
+  const serviceIndex = services.indexOf(rawService as any);
   const service = rawService ? normalizeService(rawService, serviceIndex) : undefined;
 
   if (isLoading) {
@@ -154,7 +158,7 @@ export default function ServiceDetailsPage({
                       <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-background">
                         <img
                           src={user.image}
-                          alt={user.name}
+                          alt={getUserDisplayName(user)}
                           className="h-full w-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -162,7 +166,7 @@ export default function ServiceDetailsPage({
                             if (target.parentElement) {
                               target.parentElement.innerHTML = `
                                 <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-secondary text-xl font-bold text-primary-foreground">
-                                  ${user.name.charAt(0).toUpperCase()}
+                                  ${getUserInitials(user)}
                                 </div>
                               `;
                             }
@@ -171,11 +175,11 @@ export default function ServiceDetailsPage({
                       </div>
                     ) : (
                       <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary text-xl font-bold text-primary-foreground">
-                        {user.name.charAt(0).toUpperCase()}
+                        {getUserInitials(user)}
                       </div>
                     )}
                     <div>
-                      <h3 className="font-semibold">{user.name}</h3>
+                      <h3 className="font-semibold">{getUserDisplayName(user)}</h3>
                       {user.verified && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <CheckCircle2 className="h-3 w-3 text-primary" />
@@ -189,7 +193,9 @@ export default function ServiceDetailsPage({
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span>
-                        {user.location}, {user.country}
+                        {user.location || user.businessProfile?.location}
+                        {(user.country || user.businessProfile?.country) &&
+                          `, ${user.country || user.businessProfile?.country}`}
                       </span>
                     </div>
 

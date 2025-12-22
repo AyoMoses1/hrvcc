@@ -36,11 +36,25 @@ import {
   Phone,
   Mail,
   User,
+  Trash2,
 } from 'lucide-react';
 import { exportMemberDirectoryCSV } from '@/lib/utils/csv';
 import Link from 'next/link';
 import { useBusinesses, useVerifyBusiness, useSuspendBusiness } from '@/hooks/use-businesses';
 import { useDebounce } from '@/hooks/use-debounce';
+import { adminApi } from '@/lib/api/admin';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function BusinessesPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +62,15 @@ export function BusinessesPage() {
     'all'
   );
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'verified' | 'unverified'>('all');
+  const [selectedSuspended, setSelectedSuspended] = useState<'all' | 'suspended' | 'active'>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<{
+    id: string;
+    businessName: string;
+  } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const queryClient = useQueryClient();
 
   const {
     data: businessesData,
@@ -59,6 +81,7 @@ export function BusinessesPage() {
     limit: 100,
     category: selectedCategory,
     verified: selectedStatus === 'all' ? undefined : selectedStatus === 'verified',
+    suspended: selectedSuspended === 'all' ? 'all' : selectedSuspended === 'suspended',
     search: debouncedSearch || undefined,
   });
 
@@ -72,6 +95,22 @@ export function BusinessesPage() {
 
   const handleSuspend = (id: string, suspended: boolean) => {
     suspendMutation.mutate({ id, suspended });
+  };
+
+  const handleDelete = async () => {
+    if (!selectedBusiness) return;
+    setDeleteLoading(true);
+    try {
+      await adminApi.deleteBusiness(selectedBusiness.id);
+      toast.success('Business deleted successfully');
+      setDeleteDialogOpen(false);
+      setSelectedBusiness(null);
+      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to delete business');
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   return (
@@ -92,7 +131,7 @@ export function BusinessesPage() {
       {/* Filters */}
       <Card className="mb-6">
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -114,12 +153,22 @@ export function BusinessesPage() {
             </Select>
             <Select value={selectedStatus} onValueChange={(v) => setSelectedStatus(v as any)}>
               <SelectTrigger>
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Verification" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="verified">Verified</SelectItem>
                 <SelectItem value="unverified">Pending Verification</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={selectedSuspended} onValueChange={(v) => setSelectedSuspended(v as any)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Suspension" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Businesses</SelectItem>
+                <SelectItem value="active">Active Only</SelectItem>
+                <SelectItem value="suspended">Suspended Only</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -306,6 +355,21 @@ export function BusinessesPage() {
                                 Suspend Business
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedBusiness({
+                                  id: business.id,
+                                  businessName: business.businessName,
+                                });
+                                setDeleteDialogOpen(true);
+                              }}
+                              disabled={deleteLoading}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Business
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -317,6 +381,30 @@ export function BusinessesPage() {
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Business</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{selectedBusiness?.businessName}</strong>?
+              This will permanently delete the business profile, user account, and all associated
+              data (contact person, addresses, documents, subscriptions, etc.). This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete Business'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {!isLoading && businesses.length === 0 && (
         <Card>

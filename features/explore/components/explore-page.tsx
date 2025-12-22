@@ -30,7 +30,8 @@ export function ExplorePage() {
   } = useBusinesses({
     page: 1,
     limit: 100,
-    verified: true, // Only show verified businesses
+    // Only show businesses with completed KYC (verified = true means kycStatus = 'approved')
+    verified: true,
   });
   const allBusinesses = businessesData?.data || [];
 

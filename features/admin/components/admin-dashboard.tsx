@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building2, Briefcase, AlertCircle, TrendingUp, Loader2, Ban } from 'lucide-react';
 import { adminApi, AdminStats } from '@/lib/api/admin';
 import { formatRelativeTime } from '@/lib/utils';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { AdminUserDetailsModal } from './admin-user-details-modal';
 
 export function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -32,6 +34,21 @@ export function AdminDashboard() {
 
     fetchStats();
   }, []);
+
+  const handleBusinessClick = (businessId: string) => {
+    setSelectedBusinessId(businessId);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedBusinessId(null);
+  };
+
+  const handleActionComplete = () => {
+    // Refetch stats after an action is completed
+    adminApi.getStats().then(setStats).catch(console.error);
+  };
 
   if (isLoading) {
     return (
@@ -152,10 +169,13 @@ export function AdminDashboard() {
                         {formatRelativeTime(user.createdAt)}
                       </p>
                     </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/users`} className="text-xs text-primary">
-                        View
-                      </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleBusinessClick(user.id)}
+                      className="text-xs text-primary"
+                    >
+                      View
                     </Button>
                   </div>
                 ))
@@ -179,10 +199,13 @@ export function AdminDashboard() {
                       <AlertCircle className="h-4 w-4 text-yellow-500" />
                       <p className="font-medium">{user.name || user.email}</p>
                     </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/users`} className="text-xs text-primary">
-                        Review
-                      </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleBusinessClick(user.id)}
+                      className="text-xs text-primary"
+                    >
+                      Review
                     </Button>
                   </div>
                 ))
@@ -221,10 +244,13 @@ export function AdminDashboard() {
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/users`} className="text-xs text-primary">
-                        View
-                      </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleBusinessClick(user.id)}
+                      className="text-xs text-primary"
+                    >
+                      View
                     </Button>
                   </div>
                 ))
@@ -233,6 +259,14 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Admin User Details Modal */}
+      <AdminUserDetailsModal
+        businessId={selectedBusinessId}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onActionComplete={handleActionComplete}
+      />
     </div>
   );
 }

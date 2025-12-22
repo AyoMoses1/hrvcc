@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Send, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getUserDisplayName } from '@/lib/utils/user';
 
 interface Conversation {
   id: string;
   user: {
-    name: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
     image?: string;
   };
   lastMessage: string;
@@ -84,7 +87,7 @@ export function MessagesPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="mb-1 flex items-center justify-between">
-                        <p className="font-medium">{conversation.user.name}</p>
+                        <p className="font-medium">{getUserDisplayName(conversation.user)}</p>
                         {conversation.unread > 0 && (
                           <Badge variant="default" className="ml-2">
                             {conversation.unread}
@@ -108,7 +111,7 @@ export function MessagesPage() {
           {activeConversation ? (
             <>
               <CardHeader className="border-b">
-                <CardTitle>{activeConversation.user.name}</CardTitle>
+                <CardTitle>{getUserDisplayName(activeConversation.user)}</CardTitle>
               </CardHeader>
               <CardContent className="flex h-[500px] flex-col p-6">
                 {/* Messages */}

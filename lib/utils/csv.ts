@@ -1,4 +1,5 @@
 import { User, MemberPlan, Event } from '@/lib/types';
+import { getUserDisplayName } from './user';
 
 /**
  * Convert array of objects to CSV string
@@ -60,19 +61,19 @@ export function exportMemberDirectoryCSV(users: User[]): void {
   ];
 
   const csvData = users.map((user) => ({
-    Category: user.businessCategory || user.services?.[0] || '',
-    'Business name': user.name,
+    Category: user.businessCategory || user.businessProfile?.services?.[0] || '',
+    'Business name': user.businessProfile?.businessName || getUserDisplayName(user),
     'Last name': user.lastName || '',
     'First name': user.firstName || '',
     Address: user.address || '',
     City: user.city || user.location || '',
     State: user.state || '',
     Zip: user.zip || '',
-    Phone: user.phone || '',
-    Fax: user.fax || '',
+    Phone: user.businessProfile?.phone || '',
+    Fax: user.businessProfile?.fax || '',
     'Texting Number': user.textingNumber || '',
     'Texting Keyword': user.textingKeyword || '',
-    URL: user.url || user.website || '',
+    URL: user.url || user.businessProfile?.websiteUrl || user.businessProfile?.website || '',
     Email: user.email || '',
   }));
 

@@ -18,6 +18,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
+import { CreateJobForm } from '@/features/jobs/components/create-job-form';
 
 interface DashboardPageProps {
   user: any;
@@ -97,7 +98,14 @@ export function DashboardPage({ user }: DashboardPageProps) {
 
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold">Welcome back, {user.name}!</h1>
+        <h1 className="mb-2 text-3xl font-bold">
+          Welcome back,{' '}
+          {user.name ||
+            (user.firstName && user.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : user.firstName || user.lastName || 'User')}
+          !
+        </h1>
         <p className="text-muted-foreground">Here's what's happening with your profile today.</p>
       </div>
 
@@ -220,18 +228,28 @@ export function DashboardPage({ user }: DashboardPageProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="jobs">
+        <TabsContent value="jobs" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Job Applications</CardTitle>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Manage Jobs</CardTitle>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Post new jobs and manage your job listings. Jobs require admin approval before appearing on the job board.
+                  </p>
+                </div>
+                <CreateJobForm />
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                View and manage your job applications and saved jobs.
-              </p>
-              <Button className="mt-4" asChild>
-                <Link href="/jobs">Browse Jobs</Link>
-              </Button>
+              <div className="space-y-4">
+                <Button variant="outline" asChild>
+                  <Link href="/jobs">
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    Browse All Jobs
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

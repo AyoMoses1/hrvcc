@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,10 +25,11 @@ import {
   ShieldCheck,
   ShieldX,
   Clock,
+  KeyRound,
 } from 'lucide-react';
 import { useUsers } from '@/hooks/use-users';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -36,29 +37,72 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { adminApi } from '@/lib/api/admin';
+import { toast } from 'sonner';
 
 export function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRole, setSelectedRole] = useState('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const queryClient = useQueryClient();
 
   const { data: usersData, isLoading, error } = useUsers({ page: 1, limit: 1000 });
   const allUsers = usersData?.data || [];
 
   const filteredUsers = useMemo(() => {
-    return allUsers.filter((user) => {
-      const matchesSearch =
-        !debouncedSearch ||
-        user.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        user.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        user.email?.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || user.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
+    return allUsers
+      .map((user) => ({
+        ...user,
+        // Extract title and location from businessProfile if not directly on user
+        title: user.title || user.businessProfile?.title,
+        location: user.location || user.businessProfile?.location,
+        // Compute kycVerified from kycStatus if not provided
+        kycVerified: user.kycVerified ?? user.kycStatus === 'approved',
+      }))
+      .filter((user) => {
+        const displayName =
+          user.name ||
+          (user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user.firstName || user.lastName || '');
+        const matchesSearch =
+          !debouncedSearch ||
+          displayName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          user.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          user.email?.toLowerCase().includes(debouncedSearch.toLowerCase());
+        const matchesCategory = selectedCategory === 'all' || user.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+      });
   }, [allUsers, debouncedSearch, selectedCategory]);
 
   const categories = Array.from(new Set(allUsers.map((u) => u.category).filter(Boolean)));
+
+  const handleResetPassword = async (userId: string) => {
+    setActionLoading(userId);
+    try {
+      await adminApi.sendPasswordReset(userId);
+      toast.success('Password reset email sent successfully');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to send password reset email');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSuspend = async (userId: string, suspended: boolean) => {
+    setActionLoading(userId);
+    try {
+      await adminApi.suspendBusiness(userId, suspended);
+      toast.success(suspended ? 'User suspended successfully' : 'User unsuspended successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to update user status');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <div className="container py-8">
@@ -142,10 +186,7 @@ export function UsersPage() {
                       Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      Verified
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      Last Login
+                      KYC Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Joined
@@ -157,14 +198,34 @@ export function UsersPage() {
                 </thead>
                 <tbody className="divide-y bg-background">
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} className="transition-colors hover:bg-muted/50">
+                    <tr
+                      key={user.id}
+                      className="cursor-pointer transition-colors hover:bg-muted/50"
+                      onClick={() => {
+                        if (!user.suspended) {
+                          window.location.href = `/profile/${user.slug || user.id}`;
+                        }
+                      }}
+                    >
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="flex items-center">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                            {user.name.charAt(0)}
+                            {(
+                              user.name ||
+                              (user.firstName && user.lastName
+                                ? `${user.firstName} ${user.lastName}`
+                                : user.firstName || user.lastName || 'U')
+                            )
+                              .charAt(0)
+                              .toUpperCase()}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium">{user.name}</div>
+                            <div className="text-sm font-medium">
+                              {user.name ||
+                                (user.firstName && user.lastName
+                                  ? `${user.firstName} ${user.lastName}`
+                                  : user.firstName || user.lastName || 'User')}
+                            </div>
                             <div className="text-sm text-muted-foreground">{user.title}</div>
                           </div>
                         </div>
@@ -186,30 +247,20 @@ export function UsersPage() {
                         )}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
-                        {user.verified ? (
+                        {user.kycVerified ? (
                           <Badge variant="secondary" className="text-xs">
                             <CheckCircle className="mr-1 h-3 w-3" />
-                            Verified
+                            KYC Verified
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">
                             <XCircle className="mr-1 h-3 w-3" />
-                            Not Verified
+                            {user.kycStatus || 'Pending'}
                           </Badge>
                         )}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {user.joinedDate
-                              ? new Date(user.joinedDate).toLocaleDateString()
-                              : 'N/A'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-                        {user.joinedDate ? new Date(user.joinedDate).toLocaleDateString() : 'N/A'}
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                         <DropdownMenu>
@@ -219,22 +270,24 @@ export function UsersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/profile/${(user as any).slug || user.id}`}>
-                                View Profile
-                              </Link>
+                            <DropdownMenuItem
+                              onClick={() => handleResetPassword(user.id)}
+                              disabled={actionLoading === user.id}
+                            >
+                              <KeyRound className="mr-2 h-4 w-4" />
+                              {actionLoading === user.id ? 'Sending...' : 'Reset Password'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <ShieldCheck className="mr-2 h-4 w-4" />
-                              Verify User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <ShieldX className="mr-2 h-4 w-4" />
-                              Revoke Verification
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem
+                              onClick={() => handleSuspend(user.id, !user.suspended)}
+                              disabled={actionLoading === user.id}
+                              className={user.suspended ? 'text-green-600' : 'text-destructive'}
+                            >
                               <Shield className="mr-2 h-4 w-4" />
-                              Suspend User
+                              {actionLoading === user.id
+                                ? 'Processing...'
+                                : user.suspended
+                                  ? 'Unsuspend User'
+                                  : 'Suspend User'}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

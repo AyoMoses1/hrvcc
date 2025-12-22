@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import {
   Loader2,
@@ -60,23 +61,10 @@ const MILITARY_BRANCHES = [
 
 interface FormData {
   // User fields
-  name: string;
-  title: string;
+  firstName: string;
+  lastName: string;
   category: 'Business' | 'Organization';
-  bio: string;
-  skills: string[];
-  services: Array<{
-    id?: string;
-    name: string;
-    description?: string;
-    image?: string;
-    price?: string;
-  }>;
-  website: string;
-  linkedin: string;
-  twitter: string;
   image: string;
-  banner: string;
 
   // Business Profile
   businessName: string;
@@ -92,12 +80,29 @@ interface FormData {
   branches: string[];
   referredBy: string;
   other: string;
+  // Business profile fields moved from users
+  title: string;
+  location: string;
+  country: string;
+  bio: string;
+  skills: string[];
+  services: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    image?: string;
+    price?: string;
+  }>;
+  website: string;
+  linkedin: string;
+  twitter: string;
+  banner: string;
 
   // Contact Person
   contactTitle: string;
-  firstName: string;
+  contactFirstName: string;
   middleName: string;
-  lastName: string;
+  contactLastName: string;
   suffix: string;
   gender: string;
 
@@ -136,6 +141,8 @@ export default function EditProfilePage() {
     reset,
   } = useForm<FormData>({
     defaultValues: {
+      firstName: '',
+      lastName: '',
       skills: [],
       services: [],
       branches: [],
@@ -164,10 +171,30 @@ export default function EditProfilePage() {
           setBusinessData(data);
 
           // User fields
-          setValue('name', data.businessName || '');
-          setValue('title', data.title || '');
+          setValue('firstName', data.firstName || '');
+          setValue('lastName', data.lastName || '');
           setValue('category', data.category || 'Business');
-          setValue('bio', data.description || '');
+          setValue('image', data.image || '');
+
+          // Business Profile
+          setValue('businessName', data.businessName || '');
+          setValue('category2', data.category2 || '');
+          setValue('position', data.contactPerson?.position || '');
+          setValue('websiteUrl', data.websiteUrl || '');
+          setValue('phone', data.phone || '');
+          setValue('secondaryPhone', data.secondaryPhone || '');
+          setValue('fax', data.fax || '');
+          setValue('description', data.description || '');
+          setValue('veteranOwnedBusiness', data.veteranOwnedBusiness || false);
+          setValue('branchOfService', data.branchOfService || '');
+          setValue('branches', data.branches || []);
+          setValue('referredBy', data.referredBy || '');
+          setValue('other', data.other || '');
+          // Business profile fields
+          setValue('title', data.title || '');
+          setValue('location', data.location || '');
+          setValue('country', data.country || '');
+          setValue('bio', data.bio || data.description || '');
           setValue('skills', data.skills || []);
           // Convert services to proper format (filter out strings, keep only objects)
           const servicesArray = (data.services || [])
@@ -184,33 +211,17 @@ export default function EditProfilePage() {
               } => !!s.name
             );
           setValue('services', servicesArray);
-          setValue('website', data.websiteUrl || '');
+          setValue('website', data.website || data.websiteUrl || '');
           setValue('linkedin', data.linkedin || '');
           setValue('twitter', data.twitter || '');
-          setValue('image', data.image || '');
           setValue('banner', data.banner || '');
-
-          // Business Profile
-          setValue('businessName', data.businessName || '');
-          setValue('category2', data.category2 || '');
-          setValue('position', data.contactPerson?.position || '');
-          setValue('websiteUrl', data.websiteUrl || '');
-          setValue('phone', data.phone || '');
-          setValue('secondaryPhone', data.secondaryPhone || '');
-          setValue('fax', data.fax || '');
-          setValue('description', data.description || '');
-          setValue('veteranOwnedBusiness', data.veteranOwnedBusiness || false);
-          setValue('branchOfService', data.branchOfService || '');
-          setValue('branches', data.branches || []);
-          setValue('referredBy', data.referredBy || '');
-          setValue('other', data.other || '');
 
           // Contact Person
           if (data.contactPerson) {
             setValue('contactTitle', data.contactPerson.title || '');
-            setValue('firstName', data.contactPerson.firstName || '');
+            setValue('contactFirstName', data.contactPerson.firstName || '');
             setValue('middleName', data.contactPerson.middleName || '');
-            setValue('lastName', data.contactPerson.lastName || '');
+            setValue('contactLastName', data.contactPerson.lastName || '');
             setValue('suffix', data.contactPerson.suffix || '');
             setValue('gender', data.contactPerson.gender || '');
           }
@@ -253,17 +264,10 @@ export default function EditProfilePage() {
     try {
       const updateData: UpdateBusinessDto = {
         // User fields
-        name: data.name,
-        title: data.title,
+        firstName: data.firstName,
+        lastName: data.lastName,
         category: data.category,
-        bio: data.bio,
-        skills: data.skills,
-        services: data.services,
-        website: data.website,
-        linkedin: data.linkedin,
-        twitter: data.twitter,
         image: data.image,
-        banner: data.banner,
 
         // Business Profile
         businessProfile: {
@@ -280,14 +284,25 @@ export default function EditProfilePage() {
           branches: data.branches,
           referredBy: data.referredBy,
           other: data.other,
+          // Business profile fields
+          title: data.title,
+          location: data.location,
+          country: data.country,
+          bio: data.bio,
+          skills: data.skills,
+          services: data.services,
+          website: data.website,
+          linkedin: data.linkedin,
+          twitter: data.twitter,
+          banner: data.banner,
         },
 
         // Contact Person
         contactPerson: {
           title: data.contactTitle,
-          firstName: data.firstName,
+          firstName: data.contactFirstName || data.firstName,
           middleName: data.middleName,
-          lastName: data.lastName,
+          lastName: data.contactLastName || data.lastName,
           suffix: data.suffix,
           gender: data.gender,
         },
@@ -495,180 +510,217 @@ export default function EditProfilePage() {
                   <CardDescription>Basic information about your business</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="businessName">Business Name *</Label>
-                      <Input
-                        id="businessName"
-                        {...register('businessName')}
-                        disabled={isSubmitting}
-                        placeholder="Your Business Name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category *</Label>
-                      <Select
-                        onValueChange={(value) => setValue('category', value as any)}
-                        value={watch('category') || 'Business'}
-                        disabled={isSubmitting}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Business">Business</SelectItem>
-                          <SelectItem value="Organization">Organization</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="category2">Business Category</Label>
-                      <Select
-                        onValueChange={(value) =>
-                          setValue('category2', value === '_none' ? '' : value)
-                        }
-                        value={watch('category2') || '_none'}
-                        disabled={isSubmitting}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select business category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="_none">Select business category</SelectItem>
-                          {CATEGORIES.map((cat) => (
-                            <SelectItem key={cat} value={cat}>
-                              {cat}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Business Title/Tagline</Label>
-                      <Input
-                        id="title"
-                        {...register('title')}
-                        disabled={isSubmitting}
-                        placeholder="A short tagline for your business"
-                      />
+                  {/* User Account Information */}
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Account Information</h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name *</Label>
+                        <Input
+                          id="firstName"
+                          {...register('firstName')}
+                          disabled={isSubmitting}
+                          placeholder="Your First Name"
+                        />
+                        {errors.firstName && (
+                          <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Input
+                          id="lastName"
+                          {...register('lastName')}
+                          disabled={isSubmitting}
+                          placeholder="Your Last Name"
+                        />
+                        {errors.lastName && (
+                          <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Business Description</Label>
-                    <Textarea
-                      id="description"
-                      {...register('description')}
-                      disabled={isSubmitting}
-                      placeholder="Tell us about your business, what you offer, and what makes you unique..."
-                      rows={5}
-                    />
-                  </div>
+                  <Separator />
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        {...register('phone')}
-                        disabled={isSubmitting}
-                        placeholder="(XXX) XXX-XXXX"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="secondaryPhone">Secondary Phone</Label>
-                      <Input
-                        id="secondaryPhone"
-                        {...register('secondaryPhone')}
-                        disabled={isSubmitting}
-                        placeholder="(XXX) XXX-XXXX"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="fax">Fax Number</Label>
-                      <Input
-                        id="fax"
-                        {...register('fax')}
-                        disabled={isSubmitting}
-                        placeholder="(XXX) XXX-XXXX"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="websiteUrl">Website URL</Label>
-                      <Input
-                        id="websiteUrl"
-                        type="url"
-                        {...register('websiteUrl')}
-                        disabled={isSubmitting}
-                        placeholder="https://www.example.com"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Veteran Information */}
-                  <div className="border-t pt-6">
-                    <h3 className="mb-4 text-lg font-semibold">Veteran Information</h3>
-                    <div className="mb-4 flex items-center space-x-2">
-                      <Checkbox
-                        id="veteranOwnedBusiness"
-                        checked={veteranOwned}
-                        onCheckedChange={(checked) => setValue('veteranOwnedBusiness', !!checked)}
-                        disabled={isSubmitting}
-                      />
-                      <Label htmlFor="veteranOwnedBusiness" className="cursor-pointer">
-                        This is a veteran-owned business
-                      </Label>
+                  {/* Business Information */}
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Business Information</h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="businessName">Business Name *</Label>
+                        <Input
+                          id="businessName"
+                          {...register('businessName')}
+                          disabled={isSubmitting}
+                          placeholder="Your Business Name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category *</Label>
+                        <Select
+                          onValueChange={(value) => setValue('category', value as any)}
+                          value={watch('category') || 'Business'}
+                          disabled={isSubmitting}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Business">Business</SelectItem>
+                            <SelectItem value="Organization">Organization</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    {veteranOwned && (
-                      <div className="ml-6 space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="branchOfService">Branch of Service</Label>
-                          <Select
-                            onValueChange={(value) =>
-                              setValue('branchOfService', value === '_none' ? '' : value)
-                            }
-                            value={watch('branchOfService') || '_none'}
-                            disabled={isSubmitting}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select branch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="_none">Select branch</SelectItem>
-                              {MILITARY_BRANCHES.map((branch) => (
-                                <SelectItem key={branch} value={branch}>
-                                  {branch}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Additional Branches (if applicable)</Label>
-                          <div className="flex flex-wrap gap-2">
-                            {MILITARY_BRANCHES.map((branch) => (
-                              <Button
-                                key={branch}
-                                type="button"
-                                variant={branches.includes(branch) ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => toggleBranch(branch)}
-                                disabled={isSubmitting}
-                              >
-                                {branch}
-                              </Button>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="category2">Business Category</Label>
+                        <Select
+                          onValueChange={(value) =>
+                            setValue('category2', value === '_none' ? '' : value)
+                          }
+                          value={watch('category2') || '_none'}
+                          disabled={isSubmitting}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select business category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_none">Select business category</SelectItem>
+                            {CATEGORIES.map((cat) => (
+                              <SelectItem key={cat} value={cat}>
+                                {cat}
+                              </SelectItem>
                             ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Business Title/Tagline</Label>
+                        <Input
+                          id="title"
+                          {...register('title')}
+                          disabled={isSubmitting}
+                          placeholder="A short tagline for your business"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Business Description</Label>
+                      <Textarea
+                        id="description"
+                        {...register('description')}
+                        disabled={isSubmitting}
+                        placeholder="Tell us about your business, what you offer, and what makes you unique..."
+                        rows={5}
+                      />
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          {...register('phone')}
+                          disabled={isSubmitting}
+                          placeholder="(XXX) XXX-XXXX"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="secondaryPhone">Secondary Phone</Label>
+                        <Input
+                          id="secondaryPhone"
+                          {...register('secondaryPhone')}
+                          disabled={isSubmitting}
+                          placeholder="(XXX) XXX-XXXX"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="fax">Fax Number</Label>
+                        <Input
+                          id="fax"
+                          {...register('fax')}
+                          disabled={isSubmitting}
+                          placeholder="(XXX) XXX-XXXX"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="websiteUrl">Website URL</Label>
+                        <Input
+                          id="websiteUrl"
+                          type="url"
+                          {...register('websiteUrl')}
+                          disabled={isSubmitting}
+                          placeholder="https://www.example.com"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Veteran Information */}
+                    <div className="border-t pt-6">
+                      <h3 className="mb-4 text-lg font-semibold">Veteran Information</h3>
+                      <div className="mb-4 flex items-center space-x-2">
+                        <Checkbox
+                          id="veteranOwnedBusiness"
+                          checked={veteranOwned}
+                          onCheckedChange={(checked) => setValue('veteranOwnedBusiness', !!checked)}
+                          disabled={isSubmitting}
+                        />
+                        <Label htmlFor="veteranOwnedBusiness" className="cursor-pointer">
+                          This is a veteran-owned business
+                        </Label>
+                      </div>
+
+                      {veteranOwned && (
+                        <div className="ml-6 space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="branchOfService">Branch of Service</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setValue('branchOfService', value === '_none' ? '' : value)
+                              }
+                              value={watch('branchOfService') || '_none'}
+                              disabled={isSubmitting}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select branch" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="_none">Select branch</SelectItem>
+                                {MILITARY_BRANCHES.map((branch) => (
+                                  <SelectItem key={branch} value={branch}>
+                                    {branch}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Additional Branches (if applicable)</Label>
+                            <div className="flex flex-wrap gap-2">
+                              {MILITARY_BRANCHES.map((branch) => (
+                                <Button
+                                  key={branch}
+                                  type="button"
+                                  variant={branches.includes(branch) ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => toggleBranch(branch)}
+                                  disabled={isSubmitting}
+                                >
+                                  {branch}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -706,10 +758,10 @@ export default function EditProfilePage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name *</Label>
+                      <Label htmlFor="contactFirstName">First Name *</Label>
                       <Input
-                        id="firstName"
-                        {...register('firstName')}
+                        id="contactFirstName"
+                        {...register('contactFirstName')}
                         disabled={isSubmitting}
                         placeholder="First Name"
                       />
@@ -724,10 +776,10 @@ export default function EditProfilePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name *</Label>
+                      <Label htmlFor="contactLastName">Last Name *</Label>
                       <Input
-                        id="lastName"
-                        {...register('lastName')}
+                        id="contactLastName"
+                        {...register('contactLastName')}
                         disabled={isSubmitting}
                         placeholder="Last Name"
                       />
@@ -1188,6 +1240,7 @@ export default function EditProfilePage() {
                       />
                       {watch('image') && (
                         <div className="mt-2 h-24 w-24 overflow-hidden rounded-lg border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={watch('image')}
                             alt="Profile preview"
@@ -1210,6 +1263,7 @@ export default function EditProfilePage() {
                       />
                       {watch('banner') && (
                         <div className="mt-2 overflow-hidden rounded-lg border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={watch('banner')}
                             alt="Banner preview"

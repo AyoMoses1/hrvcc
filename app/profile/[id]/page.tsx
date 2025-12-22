@@ -4,13 +4,15 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { BusinessProfile } from '@/features/profiles/components/business-profile';
 import { useBusiness } from '@/hooks/use-businesses';
-import { Loader2, Building2, AlertCircle } from 'lucide-react';
+import { Loader2, Building2, AlertCircle, ShieldX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 export default function ProfilePage({ params }: { params: { id: string } }) {
   // Support both slug and UUID for backward compatibility
   const { data: business, isLoading, error } = useBusiness(params.id);
+  const { user: currentUser } = useAuth();
 
   if (isLoading) {
     return (
@@ -39,6 +41,44 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
             <h1 className="mb-2 text-2xl font-bold">Business Not Found</h1>
             <p className="mb-6 text-muted-foreground">
               The business profile you're looking for doesn't exist or may have been removed.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button asChild>
+                <Link href="/explore">Browse Businesses</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/">Go Home</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  // Block access if business is suspended or KYC status is pending
+  // Block ALL users (including owners and admins) from viewing pending businesses via public link
+  const isSuspended = business.suspended === true;
+  const isPendingKYC = business.kycStatus === 'pending';
+
+  // Block if suspended or pending KYC
+  if (isSuspended || isPendingKYC) {
+    return (
+      <>
+        <Header />
+        <main className="flex min-h-screen items-center justify-center">
+          <div className="mx-auto max-w-md px-4 text-center">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+              <ShieldX className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h1 className="mb-2 text-2xl font-bold">
+              {isSuspended ? 'Business Suspended' : 'Invalid Request'}
+            </h1>
+            <p className="mb-6 text-muted-foreground">
+              {isSuspended
+                ? 'This business profile has been suspended and is not available for viewing.'
+                : 'This business profile is pending verification and cannot be accessed at this time.'}
             </p>
             <div className="flex justify-center gap-3">
               <Button asChild>

@@ -6,7 +6,8 @@ import { apiClient } from './axios';
 export interface BasicSignupData {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   category: 'Business' | 'Organization';
   planId?: string;
 }
@@ -17,16 +18,17 @@ export interface BasicSignupData {
 export interface RegisterData {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   category: 'Business' | 'Organization';
   // Business Information
   businessName?: string;
   category2?: string;
-  // Contact Person
-  title?: string;
-  firstName?: string;
+  // Contact Person (if different from user account)
+  contactTitle?: string;
+  contactFirstName?: string;
   middleName?: string;
-  lastName?: string;
+  contactLastName?: string;
   suffix?: string;
   position?: string;
   // Address
@@ -47,6 +49,24 @@ export interface RegisterData {
   branchOfService?: string;
   referredBy?: string;
   other?: string;
+  // Business profile fields (moved from users)
+  title?: string; // Business title/position
+  location?: string;
+  country?: string;
+  bio?: string;
+  skills?: string[];
+  services?: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    image?: string;
+    price?: string;
+  }>;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
+  banner?: string;
+  description?: string;
   // Email & Password
   billingEmail?: string;
   username?: string;
@@ -86,7 +106,9 @@ export interface AuthResponse {
   user: {
     id: string;
     email: string;
-    name: string;
+    firstName: string;
+    lastName: string;
+    name?: string; // Computed full name for backward compatibility
     category?: string;
     role: string;
     kycRequired?: boolean;
